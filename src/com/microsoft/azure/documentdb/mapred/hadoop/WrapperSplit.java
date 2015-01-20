@@ -1,3 +1,7 @@
+//------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+//------------------------------------------------------------
+
 package com.microsoft.azure.documentdb.mapred.hadoop;
 
 import java.io.*;
@@ -12,8 +16,6 @@ import com.microsoft.azure.documentdb.hadoop.DocumentDBInputSplit;
 
 /**
  * A split in the old mapred.* API that represents a split from Documentdb.
- * Implemented here as a FileSplit because Hive misbehaves if you give it other
- * types of splits.
  */
 @SuppressWarnings("deprecation")
 public class WrapperSplit extends FileSplit implements Writable {

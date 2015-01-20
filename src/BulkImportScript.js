@@ -1,3 +1,7 @@
+//------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+//------------------------------------------------------------
+
 function bulkImport(docs, upsert) {
 	var collection = getContext().getCollection();
     var collectionLink = collection.getSelfLink();

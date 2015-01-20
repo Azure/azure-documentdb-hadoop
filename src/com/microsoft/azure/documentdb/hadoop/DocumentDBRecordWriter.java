@@ -84,7 +84,7 @@ public class DocumentDBRecordWriter extends RecordWriter<Writable, DocumentDBWri
     }
     
     private void writeCurrentBatch() {
-        
+        // Writing to output collections is round robin for each batch.
         DocumentDBConnectorUtil.executeWriteStoredProcedure(this.client, 
                 this.collections[this.currentStoredProcedureIndex].getSelfLink(),
                 this.sprocs[this.currentStoredProcedureIndex], this.cachedDocs,

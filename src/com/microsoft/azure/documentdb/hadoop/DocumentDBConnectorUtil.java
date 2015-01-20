@@ -1,3 +1,7 @@
+//------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+//------------------------------------------------------------
+
 package com.microsoft.azure.documentdb.hadoop;
 
 import java.io.IOException;
@@ -142,8 +146,6 @@ public class DocumentDBConnectorUtil {
             LOG.error("sproc got recreated after blacklisting");
             client.deleteStoredProcedure(sproc.getSelfLink(), null);
             StoredProcedure createdSproc = CreateBulkImportStoredProcedure(client, collectionSelfLink);
-            
-            // Workaround to change the self-link of the already created stored procedure.
             sproc.set("_self", createdSproc.getSelfLink());
         } catch (DocumentClientException e) {
             e.printStackTrace();

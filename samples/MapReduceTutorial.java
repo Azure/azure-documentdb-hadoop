@@ -15,7 +15,7 @@ import com.microsoft.azure.documentdb.hadoop.DocumentDBOutputFormat;
 import com.microsoft.azure.documentdb.hadoop.DocumentDBWritable;
 
 // Tally the number of property occurrences for all Documents in a collection
-public class TallyProperties {
+public class MapReduceTutorial {
     public static class Map extends Mapper<LongWritable, DocumentDBWritable, Text, IntWritable> {
         private final static IntWritable one = new IntWritable(1);
 
@@ -68,7 +68,7 @@ public class TallyProperties {
         conf.set(ConfigurationUtil.INPUT_COLLECTION_NAMES, inputCollName);
         conf.set(ConfigurationUtil.OUTPUT_COLLECTION_NAMES, outputCollName);
         
-        Job job = Job.getInstance(conf, "TallyProperties");
+        Job job = Job.getInstance(conf, "MapReduceTutorial");
         job.setJobName("TallyProperties");
 
         job.setMapperClass(Map.class);
@@ -83,7 +83,7 @@ public class TallyProperties {
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(DocumentDBWritable.class);
         
-        job.setJarByClass(TallyProperties.class);
+        job.setJarByClass(MapReduceTutorial.class);
         
         System.exit(job.waitForCompletion(true) ? 0 : 1);
     }

@@ -1,6 +1,6 @@
-/* 
- * Copyright (c) Microsoft Corporation.  All rights reserved.
- */
+//------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+//------------------------------------------------------------
 
 package com.microsoft.azure.documentdb.pig;
 
@@ -52,7 +52,7 @@ public class DocumentDBLoader extends LoadFunc{
         this.masterkey = masterkey;
         this.fields = null;
         this.dbName = dbName;
-        // here it is the comma separated collection name,
+        // Comma separated collection names
         this.inputCollections = inputCollections; 
         this.query = query;
     }
@@ -60,8 +60,7 @@ public class DocumentDBLoader extends LoadFunc{
     @Override
     public InputFormat getInputFormat() throws IOException {
         log.debug("getting input format");
-        // throw new IllegalStateException();
-         return new DocumentDBInputFormat();
+        return new DocumentDBInputFormat();
     }
 
     private Tuple translate(DocumentDBWritable value) throws IOException {
