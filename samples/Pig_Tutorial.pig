@@ -6,7 +6,7 @@ REGISTER <path to DocumentDB Java SDK jar/azure-documentdb-SNAPSHOT-dependencies
 REGISTER <path to DocumentDB Hadoop jar/azure-documentdb-hadoop-SNAPSHOT.jar>; 
 
 -- Load DocumentDB ids and timestamps   
-DocumentDB_timestamps = LOAD 'DocumentDB Endpoint' USING com.microsoft.azure.documentdb.hadoop.pig.DocumentDBLoader( 
+DocumentDB_timestamps = LOAD 'DocumentDB Endpoint' USING com.microsoft.azure.documentdb.pig.DocumentDBLoader( 
 'DocumentDB Primary Key', 'DocumentDB Database Name', 'DocumentDB Input Collection Name 1,DocumentDB Input Collection Name 2', 
 'SELECT r._rid AS id, r._ts AS ts FROM root r' ); 
 
