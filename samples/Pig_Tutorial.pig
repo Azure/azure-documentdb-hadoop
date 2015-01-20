@@ -17,5 +17,5 @@ by_minute_count = FOREACH by_minute GENERATE FLATTEN(group) as (Year:int, Month:
 
 -- Store results back into DocumentDB               
 STORE by_minute_count INTO 'DocumentDB Endpoint' 
-USING com.microsoft.azure.documentdb.hadoop.pig.DocumentDBStorage( 
+USING com.microsoft.azure.documentdb.pig.DocumentDBStorage( 
 'DocumentDB Primary Key', 'DocumentDB Database Name', 'DocumentDB Output Collection Name');
