@@ -14,8 +14,8 @@ tblproperties (
 'DocumentDB.endpoint' = 'DocumentDB Endpoint', 
 'DocumentDB.key' = 'DocumentDB Primary Key', 
 'DocumentDB.db' = 'DocumentDB Database Name', 
-'DocumentDB.inputCollections' = 'DocumentDB Input Collection Name 1,Document Input Collection Name 2', " +
-'DocumentDB.query' = 'SELECT r._rid AS id, r._ts AS ts FROM root r' ); " +
+'DocumentDB.inputCollections' = 'DocumentDB Input Collection Name 1,Document Input Collection Name 2', 
+'DocumentDB.query' = 'SELECT r._rid AS id, r._ts AS ts FROM root r' );
 
 -- Create a Hive Table for outputting to DocumentDB
 drop table DocumentDB_analytics; 
