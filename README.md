@@ -31,11 +31,10 @@ To download a copy of the source code, click "Download ZIP" on the right side of
 
 ## Dependencies
 * Microsoft Azure DocumentDB Java SDK 0.9.3 (com.microsoft.azure / azure-documentdb / 0.9.3)
-</br>
+
 When using Hive:
 * OpenX Technologies JsonSerde 1.3.1-SNAPSHOT (org.openx.data / json-serde-parent / 1.3.1-SNAPSHOT)
-</br>
-GitHub repo [here](https://github.com/rcongiu/Hive-JSON-Serde)
+    GitHub repo can be found [here](https://github.com/rcongiu/Hive-JSON-Serde)
 
 Please download the jars and add them to your build path. 
 
@@ -46,93 +45,78 @@ To use this client library with Azure DocumentDB, you need to first [create an a
 ###MapReduce
 
 #####Configuring input and output from DocumentDB Example
-<p>
-<d1>
-<dt>*// Import Hadoop Connector Classes*</dt>
-<dt>**import** com.microsoft.azure.documentdb.Document;</dt>
-<dt>**import** com.microsoft.azure.documentdb.hadoop.ConfigurationUtil;</dt>
-<dt>**import** com.microsoft.azure.documentdb.hadoop.DocumentDBInputFormat;</dt>
-<dt>**import** com.microsoft.azure.documentdb.hadoop.DocumentDBOutputFormat;</dt>
-<dt>**import** com.microsoft.azure.documentdb.hadoop.DocumentDBWritable;</dt>
-</d1>
-</p>
-<p>
-<d1>
-<dt>*// Set Configurations*</dt>
-<dt>**Configuration** conf = new Configuration();</dt>
-<dt>**final String** host = "*Your DocumentDB Endpoint*";</dt>
-<dt>**final String** key = "*Your DocumentDB Primary Key*";</dt>
-<dt>**final String** dbName = "*Your DocumentDB Database Name*";</dt>
-<dt>**final String** inputCollNames = "*Your DocumentDB Input Collection Name[s]*";</dt>
-<dt>**final String** outputCollNames = "*Your DocumentDB Output Collection Name[s]*";</dt>
-<dt>**final String** query = "*Your DocumentDB Query*";</dt>
-<br/>
-<dt>conf.set(ConfigurationUtil.DB_HOST, host);</dt>
-<dt>conf.set(ConfigurationUtil.DB_KEY, key);</dt>
-<dt>conf.set(ConfigurationUtil.DB_NAME, dbName);</dt>
-<dt>conf.set(ConfigurationUtil.INPUT_COLLECTION_NAMES, inputCollNames);</dt>
-<dt>conf.set(ConfigurationUtil.OUTPUT_COLLECTION_NAMES, outputCollNames);</dt>
-<dt>conf.set(ConfigurationUtil.QUERY, query);</dt>
-</d1>
-</p>
+```Java
+    // Import Hadoop Connector Classes
+    import com.microsoft.azure.documentdb.Document;
+    import com.microsoft.azure.documentdb.hadoop.ConfigurationUtil;
+    import com.microsoft.azure.documentdb.hadoop.DocumentDBInputFormat;
+    import com.microsoft.azure.documentdb.hadoop.DocumentDBOutputFormat;
+    import com.microsoft.azure.documentdb.hadoop.DocumentDBWritable;
+
+    // Set Configurations
+    Configuration conf = new Configuration();
+    final String host = "Your DocumentDB Endpoint";
+    final String key = "Your DocumentDB Primary Key";
+    final String dbName = "Your DocumentDB Database Name";
+    final String inputCollNames = "Your DocumentDB Input Collection Name[s]";
+    final String outputCollNames = "Your DocumentDB Output Collection Name[s]";
+    final String query = "Your DocumentDB Query";
+
+    conf.set(ConfigurationUtil.DB_HOST, host);
+    conf.set(ConfigurationUtil.DB_KEY, key);
+    conf.set(ConfigurationUtil.DB_NAME, dbName);
+    conf.set(ConfigurationUtil.INPUT_COLLECTION_NAMES, inputCollNames);
+    conf.set(ConfigurationUtil.OUTPUT_COLLECTION_NAMES, outputCollNames);
+    conf.set(ConfigurationUtil.QUERY, query);
+```
 
 Full MapReduce sample can be found [here]().
 
 ###Hive
 #####Loading data from DocumentDB Example
-<p>
-<d1>
-<dt>**CREATE EXTERNAL TABLE** *DocumentDB_Hive_Table*( *COLUMNS* ) </dt>
-<dt>**STORED BY** 'com.microsoft.azure.documentdb.hive.DocumentDBStorageHandler' </dt>
-<dt>tblproperties ( </dt>
-<dd>'DocumentDB.endpoint' = '*Your DocumentDB Endpoint*', </dd>
-<dd>'DocumentDB.key' = '*Your DocumentDB Primary Key*', </dd>
-<dd>'DocumentDB.db' = '*Your DocumentDB Database Name*', </dd>
-<dd>'DocumentDB.inputCollections' = '*Your DocumentDB Input Collection Name[s]*', </dd>
-<dd>'[Optional] DocumentDB.query' = '[Optional] *Your DocumentDB Query*' );</dd>
-</d1>
-</p>
+```Java
+    CREATE EXTERNAL TABLE DocumentDB_Hive_Table( COLUMNS )
+    STORED BY 'com.microsoft.azure.documentdb.hive.DocumentDBStorageHandler'
+    tblproperties (
+        'DocumentDB.endpoint' = 'Your DocumentDB Endpoint',
+        'DocumentDB.key' = 'Your DocumentDB Primary Key',
+        'DocumentDB.db' = 'Your DocumentDB Database Name',
+        'DocumentDB.inputCollections' = 'Your DocumentDB Input Collection Name[s]',
+        '[Optional] DocumentDB.query' = '[Optional] Your DocumentDB Query' );
+```
 
 #####Storing data to DocumentDB Example
-<p>
-<d1>
-<dt>**CREATE EXTERNAL TABLE** *Hive_DocumentDB_Table*( *COLUMNS* )</dt> 
-<dt>**STORED BY** 'com.microsoft.azure.documentdb.hive.DocumentDBStorageHandler' </dt>
-<dt>tblproperties ( </dt> 
-<dd>'DocumentDB.endpoint' = '*Your DocumentDB Endpoint*', </dd>
-<dd>'DocumentDB.key' = '*Your DocumentDB Primary Key*', </dd>
-<dd>'DocumentDB.db' = '*Your DocumentDB Database Name*', </dd>
-<dd>'DocumentDB.outputCollections' = '*Your DocumentDB Output Collection Name[s]*' ); </dd>
-<dt>**INSERT INTO TABLE** *Hive_DocumentDB_Table* </dt>
-</d1>
-</p>
-
+```Java
+    CREATE EXTERNAL TABLE Hive_DocumentDB_Table( COLUMNS )
+    STORED BY 'com.microsoft.azure.documentdb.hive.DocumentDBStorageHandler' 
+    tblproperties ( 
+        'DocumentDB.endpoint' = 'Your DocumentDB Endpoint', 
+        'DocumentDB.key' = 'Your DocumentDB Primary Key', 
+        'DocumentDB.db' = 'Your DocumentDB Database Name', 
+        'DocumentDB.outputCollections' = 'Your DocumentDB Output Collection Name[s]' );
+    INSERT INTO TABLE Hive_DocumentDB_Table
+```
 Full Hive sample can be found [here]().
 
 ###Pig
 #####Loading data from DocumentDB Example
-<p>
-<d1>
-<dt>**LOAD** '*Your DocumentDB Endpoint*' </dt>
-<dt>**USING** com.microsoft.azure.documentdb.hadoop.pig.DocumentDBLoader( </dt>
-<dd>'*Your DocumentDB Primary Key*', </dd> 
-<dd>'*Your DocumentDB Database Name*',</dd> 
-<dd>'*Your DocumentDB Input Collection Name[s]*',</dd>
-<dd>'[Optional] *Your DocumentDB SQL Query*' ); </dd> 
-</d1>
-</p>
+```Java
+    LOAD 'Your DocumentDB Endpoint' 
+    USING com.microsoft.azure.documentdb.hadoop.pig.DocumentDBLoader( 
+        'Your DocumentDB Primary Key', 
+        'Your DocumentDB Database Name',
+        'Your DocumentDB Input Collection Name[s]',
+        '[Optional] Your DocumentDB SQL Query' );
+```
 
 #####Storing data to DocumentDB Example
-<p>
-<d1>
-<dt>**STORE** *data*  **INTO** '*DocumentDB Endpoint*' </dt> 
-<dt>**USING** com.microsoft.azure.documentdb.hadoop.pig.DocumentDBStorage( </dt>
-<dd>'*DocumentDB Primary Key*',</dd> 
-<dd>'*DocumentDB Database Name*',</dd> 
-<dd>'*DocumentDB Output Collection Name[s]*' ); </dd>
-</d1>
-</p>
-
+```Java
+    STORE data  INTO 'DocumentDB Endpoint' 
+    USING com.microsoft.azure.documentdb.hadoop.pig.DocumentDBStorage( 
+        'DocumentDB Primary Key',
+        'DocumentDB Database Name',
+        'DocumentDB Output Collection Name[s]' );
+```
 Full Pig sample can be found [here]().
 
 ##Remarks
