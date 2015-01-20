@@ -8,7 +8,7 @@ This project provides a client library in Java that allows Microsoft Azure Docum
 ##Download
 ###Option 1: Via Github
 
-To get the binaries of this library as distributed by Microsoft, ready for use within your project, you can use Github releases.
+To get the binaries of this library as distributed by Microsoft, ready for use within your project, you can use [GitHub releases](https://github.com/Azure/azure-documentdb-hadoop/releases).
 
 ###Option 2: Source Via Git
 
@@ -27,7 +27,7 @@ To download a copy of the source code, click "Download ZIP" on the right side of
 * Apache Hadoop & YARN 2.4.0
     * Apache Pig 0.12.1
     * Apache Hive & HCatalog 0.13.1
-    * HDI 3.1
+* HDI 3.1 ([Getting started with HDInsight](http://azure.microsoft.com/en-us/documentation/articles/hdinsight-get-started/))
 
 ## Dependencies
 * Microsoft Azure DocumentDB Java SDK 0.9.3 (com.microsoft.azure / azure-documentdb / 0.9.3)
@@ -70,7 +70,7 @@ To use this client library with Azure DocumentDB, you need to first [create an a
     conf.set(ConfigurationUtil.QUERY, query);
 ```
 
-Full MapReduce sample can be found [here]().
+Full MapReduce sample can be found [here](https://github.com/Azure/azure-documentdb-hadoop/blob/master/samples/MapReduceTutorial.java).
 
 ###Hive
 #####Loading data from DocumentDB Example
@@ -96,7 +96,7 @@ Full MapReduce sample can be found [here]().
         'DocumentDB.outputCollections' = 'Your DocumentDB Output Collection Name[s]' );
     INSERT INTO TABLE Hive_DocumentDB_Table
 ```
-Full Hive sample can be found [here]().
+Full Hive sample can be found [here](https://github.com/Azure/azure-documentdb-hadoop/blob/master/samples/Hive_Tutorial.hql).
 
 ###Pig
 #####Loading data from DocumentDB Example
@@ -117,13 +117,14 @@ Full Hive sample can be found [here]().
         'DocumentDB Database Name',
         'DocumentDB Output Collection Name[s]' );
 ```
-Full Pig sample can be found [here]().
+Full Pig sample can be found [here](https://github.com/Azure/azure-documentdb-hadoop/blob/master/samples/Pig_Tutorial.pig).
 
 ##Remarks
 * When outputting to DocumentDB, your output collection will require capacity for an additional stored procedure. The stored procedure will remain in your collection for reuse.
 * You must set range indices for your collection if you are pushing range queries to DocumentDB. More information can be found [here](http://azure.microsoft.com/en-us/documentation/articles/documentdb-indexing-policies/).
 * Connector supports configurable *upsert* option. *Upsert* configuration is automatically set to *true* and will overwrite documents within the same collection with the same *id*.
 * Reads and writes to DocumentDB will be counted against your provisioned throughput.
+* Output to DocumentDB collections is done in batch round robin.
 
 ##Need Help?
 
