@@ -20,6 +20,16 @@ To get the source code of the connector via git just type:
 
 To download a copy of the source code, click "Download ZIP" on the right side of the page or click [here](https://github.com/Azure/azure-documentdb-hadoop/archive/master.zip). 
 
+###Option 4: Via Maven
+
+To get the binaries of this library as distributed by Microsoft, ready for use within your project, you can use Maven. 
+
+    <dependency>
+    	<groupId>com.microsoft.azure</groupId>
+    	<artifactId>azure-documentdb-hadoop</artifactId>
+    	<version>0.9.0</version>
+    </dependency>
+
 ##Requirements
 * Java Development Kit 7
 
