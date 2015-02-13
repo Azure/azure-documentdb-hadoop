@@ -70,7 +70,9 @@ To use this client library with Azure DocumentDB, you need to first [create an a
     final String dbName = "Your DocumentDB Database Name";
     final String inputCollNames = "Your DocumentDB Input Collection Name[s]";
     final String outputCollNames = "Your DocumentDB Output Collection Name[s]";
-    final String query = "Your DocumentDB Query";
+    final String query = "[Optional] Your DocumentDB Query";
+    final String upsert = "[Optional] Bool to disable or enable document upsert";
+    final String rangeindices = "[Optional] Your document property name[s] that should have a range index";
 
     conf.set(ConfigurationUtil.DB_HOST, host);
     conf.set(ConfigurationUtil.DB_KEY, key);
@@ -78,6 +80,8 @@ To use this client library with Azure DocumentDB, you need to first [create an a
     conf.set(ConfigurationUtil.INPUT_COLLECTION_NAMES, inputCollNames);
     conf.set(ConfigurationUtil.OUTPUT_COLLECTION_NAMES, outputCollNames);
     conf.set(ConfigurationUtil.QUERY, query);
+    conf.set(ConfigurationUtil.UPSERT, upsert);
+    conf.set(ConfigurationUtil.OUTPUT_RANGE_INDEXED, rangeindices);
 ```
 
 Full MapReduce sample can be found [here](https://github.com/Azure/azure-documentdb-hadoop/blob/master/samples/MapReduceTutorial.java).
@@ -103,7 +107,9 @@ Full MapReduce sample can be found [here](https://github.com/Azure/azure-documen
         'DocumentDB.endpoint' = 'Your DocumentDB Endpoint', 
         'DocumentDB.key' = 'Your DocumentDB Primary Key', 
         'DocumentDB.db' = 'Your DocumentDB Database Name', 
-        'DocumentDB.outputCollections' = 'Your DocumentDB Output Collection Name[s]' );
+        'DocumentDB.outputCollections' = 'Your DocumentDB Output Collection Name[s]',
+        '[Optional] DocumentDB.upsert' = '[Optional] Bool to disable or enable document upsert',
+        '[Optional] DocumentDB.rangeIndex' = '[Optional] Your document property name[s] that should have a range index');
     INSERT INTO TABLE Hive_DocumentDB_Table
 ```
 Full Hive sample can be found [here](https://github.com/Azure/azure-documentdb-hadoop/blob/master/samples/Hive_Tutorial.hql).
@@ -125,7 +131,9 @@ Full Hive sample can be found [here](https://github.com/Azure/azure-documentdb-h
     USING com.microsoft.azure.documentdb.hadoop.pig.DocumentDBStorage( 
         'DocumentDB Primary Key',
         'DocumentDB Database Name',
-        'DocumentDB Output Collection Name[s]' );
+        'DocumentDB Output Collection Name[s]',
+        '[Optional] Bool to disable or enable document upsert',
+        '[Optional] Your document property name[s] that should have a range index');
 ```
 Full Pig sample can be found [here](https://github.com/Azure/azure-documentdb-hadoop/blob/master/samples/Pig_Tutorial.pig).
 
