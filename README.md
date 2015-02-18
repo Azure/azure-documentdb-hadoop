@@ -27,7 +27,7 @@ To get the binaries of this library as distributed by Microsoft, ready for use w
     <dependency>
     	<groupId>com.microsoft.azure</groupId>
     	<artifactId>azure-documentdb-hadoop</artifactId>
-    	<version>0.9.0</version>
+    	<version>0.9.1</version>
     </dependency>
 
 ##Requirements
@@ -40,7 +40,7 @@ To get the binaries of this library as distributed by Microsoft, ready for use w
 * HDI 3.1 ([Getting started with HDInsight](http://azure.microsoft.com/en-us/documentation/articles/hdinsight-get-started/))
 
 ## Dependencies
-* Microsoft Azure DocumentDB Java SDK 0.9.3 (com.microsoft.azure / azure-documentdb / 0.9.3)
+* Microsoft Azure DocumentDB Java SDK 0.9.4 (com.microsoft.azure / azure-documentdb / 0.9.4)
 
 When using Hive:
 * OpenX Technologies JsonSerde 1.3.1-SNAPSHOT (org.openx.data / json-serde-parent / 1.3.1-SNAPSHOT)
@@ -146,7 +146,7 @@ Full Pig sample can be found [here](https://github.com/Azure/azure-documentdb-ha
 
 ##Need Help?
 
-Be sure to check out the Microsoft Azure [Developer Forums on MSDN](https://social.msdn.microsoft.com/forums/azure/en-US/home?forum=AzureDocumentDB) or the [Developer Forums on Stack Overflow](http://stackoverflow.com/questions/tagged/azure-documentdb) if you have trouble with the provided code.
+Be sure to check out the Microsoft Azure [Developer Forums on MSDN](https://social.msdn.microsoft.com/forums/azure/en-US/home?forum=AzureDocumentDB) or the [Developer Forums on Stack Overflow](http://stackoverflow.com/questions/tagged/azure-documentdb) if you have trouble with the provided code. Also, check out our [tutorial](http://azure.microsoft.com/en-us/documentation/articles/documentdb-run-hadoop-with-hdinsight/) for more information.
 
 ##Contribute Code or Provide Feedback
 
@@ -155,6 +155,7 @@ If you would like to become an active contributor to this project please follow 
 If you encounter any bugs with the library please file an issue in the [Issues](https://github.com/Azure/azure-documentdb-hadoop/issues) section of the project.
 
 ##Learn More
+* [DocumentDB with HDInsight Tutorial](http://azure.microsoft.com/en-us/documentation/articles/documentdb-run-hadoop-with-hdinsight/)
 * [Official Hadoop Documentation](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 * [Azure Developer Center](http://azure.microsoft.com/en-us/develop/java/)
 * [Azure DocumentDB Service](http://azure.microsoft.com/en-us/documentation/services/documentdb/)
