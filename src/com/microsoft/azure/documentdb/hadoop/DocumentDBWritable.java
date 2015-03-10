@@ -69,6 +69,9 @@ public class DocumentDBWritable implements WritableComparable<Object> {
         return new DocumentDBWritableComparator().compare(this, o);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         return this.doc != null ? this.doc.hashCode() : 0;

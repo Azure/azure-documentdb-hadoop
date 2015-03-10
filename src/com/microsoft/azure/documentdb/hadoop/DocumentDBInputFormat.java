@@ -15,7 +15,6 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * An input format that can read data from Azure DocumentDB. It sends one Document 
@@ -24,12 +23,19 @@ import org.apache.commons.logging.LogFactory;
 public class DocumentDBInputFormat extends InputFormat<LongWritable, DocumentDBWritable> {
 
     private static final Log LOG = LogFactory.getLog(DocumentDBWritable.class);
+    
+    /**
+     * Creates an instance of DocumentDBRecordReader
+     */
     @Override
     public RecordReader<LongWritable, DocumentDBWritable> createRecordReader(InputSplit split,
             TaskAttemptContext context) throws IOException, InterruptedException {
         return new DocumentDBRecordReader((DocumentDBInputSplit) split);
     }
 
+    /**
+     * Gets a list of DocumentDBInputSplit and validates all the required properties to read from documentdb.
+     */
     @Override
     public List<InputSplit> getSplits(JobContext context) throws IOException, InterruptedException {
         Configuration conf = context.getConfiguration();

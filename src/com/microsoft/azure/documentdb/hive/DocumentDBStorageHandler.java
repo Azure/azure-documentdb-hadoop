@@ -23,31 +23,52 @@ import com.microsoft.azure.documentdb.hadoop.ConfigurationUtil;
 import com.microsoft.azure.documentdb.mapred.hadoop.DocumentDBInputFormat;
 import com.microsoft.azure.documentdb.mapred.hadoop.DocumentDBOutputFormat;
 
+/**
+ * This defines DocumentDB Hive storages handles which returns the InputFormat, OutputFormat, Serde ..etc.
+ */
 public class DocumentDBStorageHandler extends Configured implements HiveStorageHandler {
     public DocumentDBStorageHandler() {
         super();
     }
 
+    /**
+     * Sets all the configuration properties for the connector in the properties map.
+     */
     public void configureTableJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
         Properties properties = tableDesc.getProperties();
         ConfigurationUtil.copyDocumentDBProperties(properties, jobProperties);
     }
 
+    /**
+     * Returns the DocumentDBInputFormat class.
+     */
     public Class<? extends InputFormat> getInputFormatClass() {
         return DocumentDBInputFormat.class;
     }
 
+    /**
+     * No metahook used.
+     */
     public HiveMetaHook getMetaHook() {
         return null;
     }
 
+    /**
+     * Returns the DocumentDBOutputFormat class.
+     */
     public Class<? extends OutputFormat> getOutputFormatClass() {
         return DocumentDBOutputFormat.class;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     }
 
+    /**
+     * Set all DocumentDB input configuration properties to the jobProperties map.
+     */
     @Override
     public void configureInputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
         Properties tableProperties = tableDesc.getProperties();
@@ -64,6 +85,9 @@ public class DocumentDBStorageHandler extends Configured implements HiveStorageH
         }
     }
 
+    /**
+     * Set all DocumentDB output configuration properties to the jobProperties map.
+     */
     @Override
     public void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
         Properties tableProperties = tableDesc.getProperties();
@@ -76,11 +100,17 @@ public class DocumentDBStorageHandler extends Configured implements HiveStorageH
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public HiveAuthorizationProvider getAuthorizationProvider() throws HiveException {
         return null;
     }
 
+    /**
+     * Returns the DocumentDBSerde class.
+     */
     @Override
     public Class<? extends SerDe> getSerDeClass() {
         return DocumentDBSerDe.class;

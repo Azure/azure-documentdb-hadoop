@@ -11,9 +11,13 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.RecordReader;
 import com.microsoft.azure.documentdb.Document;
+import com.microsoft.azure.documentdb.hadoop.BackoffExponentialRetryPolicy;
 import com.microsoft.azure.documentdb.hadoop.DocumentDBConnectorUtil;
 import com.microsoft.azure.documentdb.hadoop.DocumentDBWritable;
 
+/**
+ * Reads documents from documendb using a DocumentDBIterable instance.
+ */
 public class DocumentDBRecordReader implements RecordReader<LongWritable, DocumentDBWritable> {
 
     private long pos;
@@ -24,7 +28,7 @@ public class DocumentDBRecordReader implements RecordReader<LongWritable, Docume
 
 
     /**
-    * A record reader using the old mapred.* API that reads entities
+    * A record reader using the old mapred.* API that reads documents
     * from DocumentDB.
     */
     public DocumentDBRecordReader(WrapperSplit split) throws IOException {
@@ -36,41 +40,73 @@ public class DocumentDBRecordReader implements RecordReader<LongWritable, Docume
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public LongWritable createKey() {
         return new LongWritable();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public DocumentDBWritable createValue() {
         return new DocumentDBWritable();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public long getPos() throws IOException {
         return this.pos;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public float getProgress() throws IOException {
-        if (this.documentIterator == null)
-            return 0f;
-        return this.documentIterator.hasNext() ? 0f : 1f;
+        if (this.documentIterator == null) return 0f;
+        BackoffExponentialRetryPolicy policy = new BackoffExponentialRetryPolicy();
+        boolean hasNext = false;
+        while(policy.shouldRetry()) {
+            try {
+                hasNext = this.documentIterator.hasNext();
+                break;
+            }
+            catch(Exception e) {
+                policy.errorOccured(e);
+            }
+        }
+        
+        return hasNext ? 0f : 1f;
     }
 
     /**
-     * Gets the next writable from DocumentDb
+     * {@inheritDoc}
      */
     public boolean next(LongWritable key, DocumentDBWritable value) throws IOException {
-        if (this.documentIterator == null || !this.documentIterator.hasNext()) {
-            LOG.info(String.format("processed %d documents of collection %s", this.documentsProcessed, this.split
-                    .getWrappedSplit().getCollectionName()));
-            return false;
+        BackoffExponentialRetryPolicy retryPolicy = new BackoffExponentialRetryPolicy();
+        while(retryPolicy.shouldRetry()) {
+            try {
+                if (this.documentIterator == null || !this.documentIterator.hasNext()) {
+                    LOG.info(String.format("processed %d documents of collection %s", this.documentsProcessed, this.split
+                            .getWrappedSplit().getCollectionName()));
+                    return false;
+                }
+        
+                if (documentsProcessed % 100 == 0) {
+                    LOG.info(String.format("processed %d documents of collection %s", this.documentsProcessed, this.split
+                            .getWrappedSplit().getCollectionName()));
+                }
+        
+                value.setDoc(this.documentIterator.next());
+                this.documentsProcessed++;
+                break;
+            } catch(Exception e) {
+                retryPolicy.errorOccured(e);
+            }
         }
-
-        if (documentsProcessed % 100 == 0) {
-            LOG.info(String.format("processed %d documents of collection %s", this.documentsProcessed, this.split
-                    .getWrappedSplit().getCollectionName()));
-        }
-
-        value.setDoc(this.documentIterator.next());
-        documentsProcessed++;
+        
         return true;
     }
 }

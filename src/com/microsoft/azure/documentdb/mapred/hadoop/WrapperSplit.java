@@ -43,6 +43,9 @@ public class WrapperSplit extends FileSplit implements Writable {
         this.wrappedSplit = wrappedSplit;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void readFields(DataInput in) throws IOException {
         super.readFields(in);
@@ -56,6 +59,9 @@ public class WrapperSplit extends FileSplit implements Writable {
         wrappedSplit.readFields(in);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void write(DataOutput out) throws IOException {
         super.write(out);
@@ -63,6 +69,10 @@ public class WrapperSplit extends FileSplit implements Writable {
         wrappedSplit.write(out);
     }
 
+    /**
+     * Returns the wrapped DocumentDBInputSplit instance.
+     * @return DocumentDBInputSplit instance.
+     */
     public DocumentDBInputSplit getWrappedSplit() {
         return wrappedSplit;
     }

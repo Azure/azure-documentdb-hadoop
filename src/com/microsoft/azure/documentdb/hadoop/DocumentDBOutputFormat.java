@@ -15,9 +15,12 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
 /**
  * An output format that is used to write data to documentdb.
- *
  */
 public class DocumentDBOutputFormat extends OutputFormat<Writable, DocumentDBWritable> {
+    
+    /**
+     * Validates the required properties needed to write to documentdb.
+     */
     @Override
     public void checkOutputSpecs(JobContext context) throws IOException, InterruptedException {
         Configuration conf = context.getConfiguration();
@@ -36,11 +39,17 @@ public class DocumentDBOutputFormat extends OutputFormat<Writable, DocumentDBWri
             throw new IOException("OUTPUT_COLLECTION_NAMES must be set for the jobconf as comma separated names");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public OutputCommitter getOutputCommitter(TaskAttemptContext context) throws IOException, InterruptedException {
         return new DocumentDBOutputCommitter();
     }
 
+    /**
+     * Creates an instance of DocumentDBRecordWriter.
+     */
     @Override
     public RecordWriter<Writable, DocumentDBWritable> getRecordWriter(TaskAttemptContext context) throws IOException,
             InterruptedException {

@@ -15,6 +15,9 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
 import com.microsoft.azure.documentdb.Document;
 
+/**
+ * Reads documents from documendb using a DocumentDBIterable instance.
+ */
 public class DocumentDBRecordReader extends
         RecordReader<LongWritable, DocumentDBWritable> {
 
@@ -36,41 +39,74 @@ public class DocumentDBRecordReader extends
 
     public float getProgress() throws IOException {
         if(this.documentIterator == null) return 0f;
-        return this.documentIterator.hasNext() ? 0f : 1f;
+        boolean hasNext = false;
+        BackoffExponentialRetryPolicy policy = new BackoffExponentialRetryPolicy();
+        while(policy.shouldRetry()) {
+            try {
+                hasNext = this.documentIterator.hasNext();
+                break;
+            }
+            catch(Exception e) {
+                policy.errorOccured(e);
+            }
+        }
+        
+        return hasNext ? 0f : 1f;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public LongWritable getCurrentKey() throws IOException,
             InterruptedException {
         return new LongWritable();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DocumentDBWritable getCurrentValue() throws IOException,
             InterruptedException {
         return current;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initialize(InputSplit split, TaskAttemptContext context)
             throws IOException, InterruptedException {
         if(this.split == null) this.split = (DocumentDBInputSplit) split;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean nextKeyValue() throws IOException, InterruptedException {
         
-        if (this.documentIterator == null || !this.documentIterator.hasNext()) {
-            LOG.info(String.format("processed %d documents of collection %s", this.documentsProcessed, this.split.getCollectionName()));
-            return false;
+        BackoffExponentialRetryPolicy retryPolicy = new BackoffExponentialRetryPolicy();
+        while(retryPolicy.shouldRetry()) {
+            try {
+                if (this.documentIterator == null || !this.documentIterator.hasNext()) {
+                    LOG.info(String.format("processed %d documents of collection %s", this.documentsProcessed, this.split.getCollectionName()));
+                    return false;
+                }
+                
+                if(documentsProcessed % 100 == 0) {
+                    LOG.info(String.format("processed %d documents of collection %s", this.documentsProcessed, this.split.getCollectionName()));
+                }
+                
+                this.current.setDoc(this.documentIterator.next());
+                this.documentsProcessed++;
+                break;
+            } catch(Exception e) {
+                retryPolicy.errorOccured(e);
+            }
         }
         
-        if(documentsProcessed % 100 == 0) {
-            LOG.info(String.format("processed %d documents of collection %s", this.documentsProcessed, this.split.getCollectionName()));
-        }
-        
-        current.setDoc(this.documentIterator.next());
-        documentsProcessed++;
         return true;
     }
 }

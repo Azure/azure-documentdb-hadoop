@@ -14,8 +14,8 @@ import java.util.UUID;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mortbay.jetty.HttpStatus;
 
+import com.microsoft.azure.documentdb.Database;
 import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.documentdb.DocumentClient;
 import com.microsoft.azure.documentdb.DocumentClientException;
@@ -24,15 +24,24 @@ import com.microsoft.azure.documentdb.IndexType;
 import com.microsoft.azure.documentdb.IndexingPath;
 import com.microsoft.azure.documentdb.IndexingPolicy;
 import com.microsoft.azure.documentdb.QueryIterable;
+import com.microsoft.azure.documentdb.SqlParameter;
+import com.microsoft.azure.documentdb.SqlParameterCollection;
+import com.microsoft.azure.documentdb.SqlQuerySpec;
 import com.microsoft.azure.documentdb.StoredProcedure;
 
+/**
+ * 
+ * Utils used by the connector for DocumentDBCrud
+ *
+ */
 public class DocumentDBConnectorUtil {
-    private static final Log LOG = LogFactory.getLog(DocumentDBWritable.class);
-    private final static int REQUEST_RATE_TOO_LARGE = 429;
-    private final static int MAX_SCRIPT_DOCS = 25;
+    private static final Log LOG = LogFactory.getLog(DocumentDBConnectorUtil.class);
+    private final static int MAX_SCRIPT_DOCS = 50;
     private final static int MAX_SCRIPT_SIZE = 50000;
     private final static String BULK_IMPORT_ID = "HadoopBulkImportSprocV1";
     private final static String BULK_IMPORT_PATH = "/BulkImportScript.js";
+    
+    public static final String UserAgentSuffix = "HadoopConnector/0.9.2";
     
     /**
      * Gets an output collection with the passed name ( if the collection already exists return it, otherwise create new one
@@ -41,12 +50,12 @@ public class DocumentDBConnectorUtil {
      * @param collectionName The id of the output collection.
      * @param rangeIndexes An optional parameter that contain index paths for range indexes and it will be used to create an indexing policy.
      */
-    public static DocumentCollection createOutputCollection(DocumentClient client, String databaseSelfLink,
+    public static DocumentCollection getOrCreateOutputCollection(DocumentClient client, String databaseSelfLink,
             String collectionName, String[] rangeIndexes) throws DocumentClientException {
-        QueryIterable<DocumentCollection> collIterable = client.queryCollections(databaseSelfLink,
-                "select * from root r where r.id = \"" + collectionName + "\"", null).getQueryIterable();
-        List<DocumentCollection> collections = collIterable.toList();
-        if (collections.size() != 1) {
+        
+        DocumentCollection outputCollection = DocumentDBConnectorUtil.GetDocumentCollection(client, databaseSelfLink, collectionName);
+        
+        if (outputCollection == null) {
             DocumentCollection outputColl = new DocumentCollection("{ 'id':'" + collectionName + "' }");
             if (rangeIndexes.length > 0) {
                 IndexingPolicy policy = new IndexingPolicy();
@@ -64,13 +73,65 @@ public class DocumentDBConnectorUtil {
                 policy.getIncludedPaths().addAll(indexingPaths);
                 outputColl.setIndexingPolicy(policy);
             }
-
-            return client.createCollection(databaseSelfLink, outputColl, null).getResource();
-        } else {
-            return collections.get(0);
+            
+            BackoffExponentialRetryPolicy retryPolicy = new BackoffExponentialRetryPolicy();
+            
+            while(retryPolicy.shouldRetry()) {
+                try {
+                    outputCollection = client.createCollection(databaseSelfLink, outputColl, null).getResource();
+                    break;
+                } catch (Exception e) {
+                    retryPolicy.errorOccured(e);
+                }
+            }
         }
+        
+        return outputCollection;
     }
-
+    
+    public static DocumentCollection GetDocumentCollection(DocumentClient client, String databaseSelfLink, String collectionId) {
+        BackoffExponentialRetryPolicy retryPolicy = new BackoffExponentialRetryPolicy();
+        QueryIterable<DocumentCollection> collIterable = client.queryCollections(
+                databaseSelfLink,
+                new SqlQuerySpec("SELECT * FROM root r WHERE r.id=@id",
+                        new SqlParameterCollection(new SqlParameter("@id", collectionId))),
+                null).getQueryIterable();
+        
+        List<DocumentCollection> collections = null;
+        while(retryPolicy.shouldRetry()){
+            try {
+                collections = collIterable.toList();
+                break;
+            } catch (Exception e) {
+                retryPolicy.errorOccured(e);
+            }
+        }
+        
+        if(collections.size() == 0) return null;
+        return collections.get(0);
+    }
+    
+    public static Database GetDatabase(DocumentClient client, String databaseId) {
+        BackoffExponentialRetryPolicy retryPolicy = new BackoffExponentialRetryPolicy();
+        QueryIterable<Database> dbIterable = client.queryDatabases(
+                new SqlQuerySpec("SELECT * FROM root r WHERE r.id=@id",
+                        new SqlParameterCollection(new SqlParameter("@id", databaseId))),
+                null).getQueryIterable();
+        
+        List<Database> databases = null;
+        while(retryPolicy.shouldRetry()){
+            try {
+                databases = dbIterable.toList();
+                break;
+            } catch (Exception e) {
+                retryPolicy.errorOccured(e);
+            }
+        }
+        
+        if(databases.size() == 0) return null;
+        return databases.get(0);
+    }
+    
     /**
      * Gets the bulk import stored procedure that will be used for writing documents ( if the sproc already exists, use it, otherwise create a new one.
      * @param client the DocumentClient instance for DocumentDB.
@@ -79,8 +140,21 @@ public class DocumentDBConnectorUtil {
      */
     public static StoredProcedure CreateBulkImportStoredProcedure(DocumentClient client, String collectionLink)
             throws DocumentClientException {
-        String query = String.format("select * from root r where r.id = '%s'", BULK_IMPORT_ID);
-        List<StoredProcedure> sprocs = client.queryStoredProcedures(collectionLink, query, null).getQueryIterable().toList();
+        BackoffExponentialRetryPolicy retryPolicy = new BackoffExponentialRetryPolicy();
+        List<StoredProcedure> sprocs = null;
+        
+        while(retryPolicy.shouldRetry()){
+            try {
+                sprocs = client.queryStoredProcedures(collectionLink,
+                        new SqlQuerySpec("SELECT * FROM root r WHERE r.id=@id",
+                                new SqlParameterCollection(new SqlParameter("@id", BULK_IMPORT_ID))),
+                        null).getQueryIterable().toList();
+                break;
+            } catch (Exception e) {
+                retryPolicy.errorOccured(e);
+            }
+        }
+        
         if(sprocs.size() > 0) {
             return sprocs.get(0);
         }
@@ -103,55 +177,26 @@ public class DocumentDBConnectorUtil {
      */
     public static void executeWriteStoredProcedure(final DocumentClient client, String collectionSelfLink, final StoredProcedure sproc,
             List<Document> allDocs, final boolean upsert) {
-        try {
-            int currentCount = 0;
-            int docCount = Math.min(allDocs.size(), MAX_SCRIPT_DOCS);
-            
-            while (currentCount < docCount)
-            {
-                String []jsonArrayString = CreateBulkInsertScriptArguments(allDocs, currentCount, docCount, MAX_SCRIPT_SIZE);
-                String response = client.executeStoredProcedure(sproc.getSelfLink(), new Object[] {jsonArrayString, upsert })
-                        .getResponseAsString();
-                int createdCount = Integer.parseInt(response);
-                
-                currentCount += createdCount;
-            }
-        } catch (DocumentClientException e) {
-            if (e.getStatusCode() == REQUEST_RATE_TOO_LARGE) {
-                LOG.error("Throttled, retrying after:"+e.getRetryAfterInMilliseconds());
-                
-               try {
-                   Thread.sleep(e.getRetryAfterInMilliseconds());
-               } catch (InterruptedException e1) {
-                   throw new IllegalStateException(e1);
-               }
-               
-               executeWriteStoredProcedure(client, collectionSelfLink, sproc, allDocs, upsert);
-            } else if (e.getStatusCode() == HttpStatus.ORDINAL_403_Forbidden) {
-                // Recreate the stored procedure if it gets blacklisted ( should never happen )
-                recreateStoredProcedure(client, collectionSelfLink, sproc);
-                executeWriteStoredProcedure(client, collectionSelfLink, sproc, allDocs, upsert);
-            } else {
-                e.printStackTrace();
-                throw new IllegalStateException(e);
-            }
-        }
-    }
-    
-    /**
-     * Used to delete the stored procedure and recreate it if it gets blacklisted
-     */
-    private static void recreateStoredProcedure(DocumentClient client, String collectionSelfLink, StoredProcedure sproc) {
-        try {
-            LOG.error("sproc got recreated after blacklisting");
-            client.deleteStoredProcedure(sproc.getSelfLink(), null);
-            StoredProcedure createdSproc = CreateBulkImportStoredProcedure(client, collectionSelfLink);
-            sproc.set("_self", createdSproc.getSelfLink());
-        } catch (DocumentClientException e) {
-            e.printStackTrace();
-            throw new IllegalStateException(e);
-        }
+        int currentCount = 0;
         
+        while (currentCount < allDocs.size())
+        {
+            String []jsonArrayString = CreateBulkInsertScriptArguments(allDocs, currentCount, MAX_SCRIPT_SIZE);
+            BackoffExponentialRetryPolicy retryPolicy = new BackoffExponentialRetryPolicy();
+            String response = null;
+            while(retryPolicy.shouldRetry()){
+                try {
+                    response = client.executeStoredProcedure(sproc.getSelfLink(), new Object[] { jsonArrayString, upsert })
+                        .getResponseAsString();
+                    break;
+                } catch(Exception e){
+                    retryPolicy.errorOccured(e);  
+                }
+            }
+            
+            int createdCount = Integer.parseInt(response);
+            currentCount += createdCount;
+        }
     }
 
     /**
@@ -160,19 +205,18 @@ public class DocumentDBConnectorUtil {
      * @param currentIndex the current index in the list of docs to start with.
      * @param maxCount the max count to be created by the sproc.
      * @param maxScriptSize the max size of the sproc that is used to avoid exceeding the max request size.
-     * @return
+     * @return a string array for all documents to be created
      */
-    private static String[] CreateBulkInsertScriptArguments(List<Document> docs, int currentIndex, int maxCount, int maxScriptSize)
+    private static String[] CreateBulkInsertScriptArguments(List<Document> docs, int currentIndex, int maxScriptSize)
     {
-        if (currentIndex >= maxCount) return new String[]{};
+        if (currentIndex >= docs.size()) return new String[]{};
         
         ArrayList<String> jsonDocumentList = new ArrayList<String>();
-        String stringifiedDoc = docs.get(0).toString();
-        jsonDocumentList.add(stringifiedDoc);
-        int scriptCapacityRemaining = maxScriptSize - stringifiedDoc.length();
+        String stringifiedDoc;
+        int scriptCapacityRemaining = maxScriptSize;
 
-        int i = 1;
-        while (scriptCapacityRemaining > 0 && (currentIndex + i) < maxCount)
+        int i = 0;
+        while (scriptCapacityRemaining > 0 && i < MAX_SCRIPT_DOCS && currentIndex + i < docs.size())
         {
             stringifiedDoc = docs.get(currentIndex + i).toString();
             jsonDocumentList.add(stringifiedDoc);
