@@ -48,7 +48,7 @@
         <version>2.2</version>
         <configuration>
           <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
+            <descriptorRef>bin</descriptorRef>
           </descriptorRefs>
         </configuration>
         <executions>
