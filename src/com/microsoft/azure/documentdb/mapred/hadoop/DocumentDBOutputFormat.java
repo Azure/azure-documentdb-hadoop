@@ -15,8 +15,14 @@ import org.apache.hadoop.util.Progressable;
 import com.microsoft.azure.documentdb.hadoop.ConfigurationUtil;
 import com.microsoft.azure.documentdb.hadoop.DocumentDBWritable;
 
+/**
+ * An output format that is used to write data to documentdb.
+ */
 public class DocumentDBOutputFormat implements OutputFormat<Writable, DocumentDBWritable> {
 
+    /**
+     * Validates the required properties needed to write to documentdb.
+     */
     public void checkOutputSpecs(FileSystem fs, JobConf conf) throws IOException {
         final String endpoint = ConfigurationUtil.getDBEndpoint(conf);
         final String key = ConfigurationUtil.getDBKey(conf);
@@ -33,6 +39,9 @@ public class DocumentDBOutputFormat implements OutputFormat<Writable, DocumentDB
             throw new IOException("OUTPUT_COLLECTION_NAME must be set for the jobconf as comma separated names");
     }
 
+    /**
+     * Creates an instance of DocumentDBRecordWriter.
+     */
     public RecordWriter<Writable, DocumentDBWritable> getRecordWriter(FileSystem fs, JobConf conf, String arg2,
             Progressable arg3) throws IOException {
 

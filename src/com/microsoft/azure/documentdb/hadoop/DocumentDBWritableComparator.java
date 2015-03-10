@@ -23,6 +23,9 @@ public class DocumentDBWritableComparator extends WritableComparator {
         super(keyClass, createInstances);
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     public int compare(final WritableComparable a, final WritableComparable b) {
         if (a instanceof DocumentDBWritable && b instanceof DocumentDBWritable) {

@@ -33,6 +33,9 @@ import com.microsoft.azure.documentdb.hadoop.ConfigurationUtil;
 import com.microsoft.azure.documentdb.hadoop.DocumentDBInputFormat;
 import com.microsoft.azure.documentdb.hadoop.DocumentDBWritable;
 
+/**
+ * A Pig data loader from DocumentDB.
+ */
 public class DocumentDBLoader extends LoadFunc{
     private String masterkey = null;
     private RecordReader reader = null;
@@ -57,6 +60,9 @@ public class DocumentDBLoader extends LoadFunc{
         this.query = query;
     }
 
+    /**
+     * Returns an instance of DocumentDBInputFormat
+     */
     @Override
     public InputFormat getInputFormat() throws IOException {
         log.debug("getting input format");
@@ -115,6 +121,9 @@ public class DocumentDBLoader extends LoadFunc{
         }
     }
     
+    /**
+     * Converts a DocumentDBWritable to a pig Tuple.
+     */
     @Override
     public Tuple getNext() throws IOException {
         LongWritable key = null;
@@ -137,22 +146,17 @@ public class DocumentDBLoader extends LoadFunc{
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void prepareToRead(RecordReader reader, PigSplit split)
             throws IOException {
         this.reader = reader;
     }
 
-    public ResourceSchema getSchema(String location, Job job)
-            throws IOException {
-        return this.schema;
-    }
-
     /**
-     * 
-     * @param location : the docdb endpoint
-     * @param job
-     * @throws IOException
+     * Sets the DocumentDB connector input configuration properties.
      */
     @Override
     public void setLocation(String location, Job job) throws IOException {
@@ -169,11 +173,17 @@ public class DocumentDBLoader extends LoadFunc{
         conf.setBoolean(MRJobConfig.MAPREDUCE_JOB_USER_CLASSPATH_FIRST, true);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String relativeToAbsolutePath(final String location, final Path currentDir) {
         return location;
     }
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setUDFContextSignature(String signature) {
         

@@ -21,13 +21,20 @@ import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.documentdb.DocumentClient;
 import com.microsoft.azure.documentdb.DocumentCollection;
 import com.microsoft.azure.documentdb.QueryIterable;
+import com.microsoft.azure.documentdb.SqlParameter;
+import com.microsoft.azure.documentdb.SqlParameterCollection;
+import com.microsoft.azure.documentdb.SqlQuerySpec;
 import com.microsoft.azure.documentdb.StoredProcedure;
+import com.microsoft.azure.documentdb.hadoop.BackoffExponentialRetryPolicy;
 import com.microsoft.azure.documentdb.hadoop.DocumentDBWritable;
 import com.microsoft.azure.documentdb.hadoop.DocumentDBConnectorUtil;
 
+/**
+ * Writes data to DocumentDB in document batches using a stored procedure.
+ */
 public class DocumentDBRecordWriter implements RecordWriter<Writable, DocumentDBWritable> {
     private static final Log LOG = LogFactory.getLog(DocumentDBWritable.class);
-    private static int MAX_DOC_SIZE = 25;
+    private static int MAX_DOC_SIZE = 50;
     private DocumentClient client;
     private boolean enableUpsert;
     private DocumentCollection[] collections;
@@ -41,21 +48,15 @@ public class DocumentDBRecordWriter implements RecordWriter<Writable, DocumentDB
             String[] rangeIndexes, boolean upsert) throws IOException {
         DocumentClient client;
         try {
-            client = new DocumentClient(host, key, ConnectionPolicy.GetDefault(), ConsistencyLevel.Session);
-
-            QueryIterable<Database> dbIterable = client.queryDatabases(
-                    String.format("select * from root r where r.id =\"%s\"", dbName), null).getQueryIterable();
-            List<Database> databases = dbIterable.toList();
-            if (databases.size() != 1) {
-                throw new IOException(String.format("Database %s doesn't exist", dbName));
-            }
-
-            Database db = databases.get(0);
+            ConnectionPolicy policy = ConnectionPolicy.GetDefault();
+            policy.setUserAgentSuffix(DocumentDBConnectorUtil.UserAgentSuffix);
+            client = new DocumentClient(host, key, policy, ConsistencyLevel.Session);
+            Database db = DocumentDBConnectorUtil.GetDatabase(client, dbName);
             this.client = client;
             this.collections = new DocumentCollection[collNames.length];
             this.sprocs = new StoredProcedure[collNames.length];
             for (int i = 0; i < collNames.length; i++) {
-                this.collections[i] =  DocumentDBConnectorUtil.createOutputCollection(client, db.getSelfLink(), collNames[i],
+                this.collections[i] =  DocumentDBConnectorUtil.getOrCreateOutputCollection(client, db.getSelfLink(), collNames[i],
                         rangeIndexes);
                 this.sprocs[i] = DocumentDBConnectorUtil.CreateBulkImportStoredProcedure(client, this.collections[i].getSelfLink());
             }
@@ -68,12 +69,18 @@ public class DocumentDBRecordWriter implements RecordWriter<Writable, DocumentDB
         }
     }
 
+    /**
+     * Writes the last batch of documents that are being cached.
+     */
     public void close(Reporter reporter) throws IOException {
         if (this.cachedDocs.size() > 0) {
             this.writeCurrentBatch();
         }
     }
 
+    /**
+     * Writes data to DocumentDB if the cached documents reach the maximum cache size.
+     */
     public void write(Writable key, DocumentDBWritable value) throws IOException {
         Document doc = value.getDoc();
         DocumentDBConnectorUtil.addIdIfMissing(doc);

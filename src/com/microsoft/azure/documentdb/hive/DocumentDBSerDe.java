@@ -19,6 +19,11 @@ import org.openx.data.jsonserde.json.JSONObject;
 import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.documentdb.hadoop.DocumentDBWritable;
 
+/**
+ * 
+ * A wrapper for openx JsonSerde to work with DocumentDBWritable. 
+ *
+ */
 public class DocumentDBSerDe implements SerDe {
 
     private DocumentDBWritable cachedWritable;
@@ -29,27 +34,45 @@ public class DocumentDBSerDe implements SerDe {
         this.jsonSerde = new JsonSerDe();
     }
 
+    /**
+     * Returns a JSONObject instance by deserializing a DocumentDBWritable.
+     */
     public Object deserialize(Writable writable) throws SerDeException {
         Text txtWritable = new Text(writable.toString());
         return (JSONObject) this.jsonSerde.deserialize(txtWritable);
     }
 
+    /**
+     * Returns JsonSerde object inspector.
+     */
     public ObjectInspector getObjectInspector() throws SerDeException {
         return this.jsonSerde.getObjectInspector();
     }
 
+    /**
+     * Returns JsonSerde stats.
+     */
     public SerDeStats getSerDeStats() {
         return this.jsonSerde.getSerDeStats();
     }
 
+    /**
+     * Returns the class name to serialize to which is DocumentDBWritable.
+     */
     public Class<? extends Writable> getSerializedClass() {
         return DocumentDBWritable.class;
     }
     
+    /**
+     * Calls JsonSerde.initialize
+     */
     public void initialize(Configuration conf, Properties properties) throws SerDeException {
         this.jsonSerde.initialize(conf, properties);
     }
 
+    /**
+     * Serializes a JsonObject to a DocumentDWritable.
+     */
     public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
         Text txtWritable = (Text) this.jsonSerde.serialize(obj, objInspector);
         Document doc = new Document(txtWritable.toString());

@@ -21,14 +21,25 @@ import com.microsoft.azure.documentdb.hadoop.ConfigurationUtil;
 import com.microsoft.azure.documentdb.hadoop.DocumentDBInputSplit;
 import com.microsoft.azure.documentdb.hadoop.DocumentDBWritable;
 
+/**
+ * An input format that can read data from Azure DocumentDB. It sends one Document 
+ * at a time to the mapper.
+ */
 public class DocumentDBInputFormat implements InputFormat<LongWritable, DocumentDBWritable> {
 
+    
+    /**
+     * Creates an instance of DocumentDBRecordReader
+     */
     public RecordReader<LongWritable, DocumentDBWritable> getRecordReader(InputSplit split, JobConf conf,
             Reporter reporter) throws IOException {
 
         return new DocumentDBRecordReader((WrapperSplit) split);
     }
 
+    /**
+     * Gets an array of DocumentDBInputSplit and validates all the required properties to read from documentdb.
+     */
     public InputSplit[] getSplits(JobConf conf, int numberOfSplits) throws IOException {
         final String endpoint = ConfigurationUtil.getDBEndpoint(conf);
         final String key = ConfigurationUtil.getDBKey(conf);

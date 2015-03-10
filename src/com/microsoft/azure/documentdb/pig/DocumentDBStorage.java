@@ -31,7 +31,9 @@ import com.microsoft.azure.documentdb.hadoop.DocumentDBOutputFormat;
 import com.microsoft.azure.documentdb.hadoop.DocumentDBRecordWriter;
 import com.microsoft.azure.documentdb.hadoop.DocumentDBWritable;
 
-
+/**
+ * An implementation of Pig StoreFunc for documentdb.
+ */
 public class DocumentDBStorage extends StoreFunc implements StoreMetadata {
     private String masterkey = null;
     private DocumentDBRecordWriter writer = null;
@@ -60,16 +62,15 @@ public class DocumentDBStorage extends StoreFunc implements StoreMetadata {
         this.rangeIndexed = rangeindexed;
     }
     
+    /**
+     * Returns an instance of DocumentDBOutputFormat.
+     */
     public OutputFormat getOutputFormat() throws IOException {
         return new DocumentDBOutputFormat();
     }
 
     /**
-     * 
-     * @param location : DocumentDB endpoint name
-     *           
-     * @param job
-     * @throws IOException
+     * Sets the DocumentDB connector output configuration properties.          
      */
     public void setStoreLocation(final String location, final Job job) throws IOException {
         Configuration conf = job.getConfiguration();
@@ -89,6 +90,9 @@ public class DocumentDBStorage extends StoreFunc implements StoreMetadata {
         conf.setBoolean(MRJobConfig.MAPREDUCE_JOB_USER_CLASSPATH_FIRST, true);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void checkSchema(final ResourceSchema schema) throws IOException {
         this.schema = schema;
         
@@ -97,14 +101,23 @@ public class DocumentDBStorage extends StoreFunc implements StoreMetadata {
         properties.setProperty(PIG_OUTPUT_SCHEMA_UDF_CONTEXT, schema.toString());
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public void storeStatistics(ResourceStatistics stats, String location,
             Job job) throws IOException {
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void storeSchema(ResourceSchema schema, String location, Job job)
             throws IOException {
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void prepareToWrite(RecordWriter writer) throws IOException {
         this.writer = (DocumentDBRecordWriter) writer;
@@ -127,6 +140,9 @@ public class DocumentDBStorage extends StoreFunc implements StoreMetadata {
 
     }
 
+    /**
+     * Sends a document to DocumentDBRecordWrites by converting a pig tuple to DocumentDBWritable.
+     */
     @Override
     public void putNext(Tuple t) throws IOException {
         DocumentDBWritable writable = new DocumentDBWritable();
@@ -169,6 +185,9 @@ public class DocumentDBStorage extends StoreFunc implements StoreMetadata {
         this.writer.write(null, writable);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setStoreFuncUDFContextSignature(final String signature) {
         udfContextSignature = signature;
     }

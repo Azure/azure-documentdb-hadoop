@@ -24,7 +24,11 @@ import com.microsoft.azure.documentdb.Database;
 import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.documentdb.DocumentClient;
 import com.microsoft.azure.documentdb.DocumentCollection;
+import com.microsoft.azure.documentdb.FeedOptions;
 import com.microsoft.azure.documentdb.QueryIterable;
+import com.microsoft.azure.documentdb.SqlParameter;
+import com.microsoft.azure.documentdb.SqlParameterCollection;
+import com.microsoft.azure.documentdb.SqlQuerySpec;
 
 /**
  * An input split that represents one collection from documentdb. It reads data one page at a time and
@@ -34,6 +38,7 @@ import com.microsoft.azure.documentdb.QueryIterable;
 public class DocumentDBInputSplit extends InputSplit implements Writable, org.apache.hadoop.mapred.InputSplit {
 
     private static final Log LOG = LogFactory.getLog(DocumentDBWritable.class);
+    private final int MAX_PAGE_SIZE = 700;
     private Text host, key, dbName, collName, query;
     private Iterator<Document> documentIterator;
 
@@ -57,6 +62,9 @@ public class DocumentDBInputSplit extends InputSplit implements Writable, org.ap
         this.query = new Text(query);
     }
 
+    /**
+     * Gets the list of DocumentDBInputSplit used.
+     */
     public static List<InputSplit> getSplits(Configuration conf, String dbHost, String dbKey, String dbName,
             String[] collNames, String query) {
         int internalNumSplits = collNames.length;
@@ -68,11 +76,17 @@ public class DocumentDBInputSplit extends InputSplit implements Writable, org.ap
         return splits;
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     public long getLength() {
         return Integer.MAX_VALUE;
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     public String[] getLocations() throws IOException {
         // Since we're pulling the data from DocumentDB, it's not localized
@@ -84,6 +98,9 @@ public class DocumentDBInputSplit extends InputSplit implements Writable, org.ap
         return this.collName.toString();
     }
 
+    /**
+     * @inheritDoc
+     */
     public void readFields(DataInput in) throws IOException {
         this.host.readFields(in);
         this.key.readFields(in);
@@ -92,6 +109,9 @@ public class DocumentDBInputSplit extends InputSplit implements Writable, org.ap
         this.query.readFields(in);
     }
 
+    /**
+     * @inheritDoc
+     */
     public void write(DataOutput out) throws IOException {
         this.host.write(out);
         this.key.write(out);
@@ -100,6 +120,11 @@ public class DocumentDBInputSplit extends InputSplit implements Writable, org.ap
         this.query.write(out);
     }
 
+    /**
+     * 
+     * @return an Iterator for documents in the collection wrapped by the split.
+     * @throws IOException if a read operation fails on documentdb
+     */
     public Iterator<Document> getDocumentIterator() throws IOException {
         if (this.documentIterator != null)
             return this.documentIterator;
@@ -109,25 +134,21 @@ public class DocumentDBInputSplit extends InputSplit implements Writable, org.ap
         DocumentClient client;
         try {
             LOG.debug("Connecting to " + this.host + " and reading from collection " + this.collName);
-            client = new DocumentClient(this.host.toString(), this.key.toString(), ConnectionPolicy.GetDefault(),
+            ConnectionPolicy policy = ConnectionPolicy.GetDefault();
+            policy.setUserAgentSuffix(DocumentDBConnectorUtil.UserAgentSuffix);
+            client = new DocumentClient(this.host.toString(), this.key.toString(), policy,
                     ConsistencyLevel.Session);
-
-            QueryIterable<Database> dbIterable = client.queryDatabases(
-                    String.format("select * from root r where r.id ='%s'", this.dbName), null).getQueryIterable();
-            List<Database> databases = dbIterable.toList();
-            if (databases.size() != 1) {
+            
+            db = DocumentDBConnectorUtil.GetDatabase(client, this.dbName.toString());
+            if (db == null) {
                 throw new IOException(String.format("Database %s doesn't exist", this.dbName));
             }
 
-            db = databases.get(0);
-            QueryIterable<DocumentCollection> collIterable = client.queryCollections(db.getSelfLink(),
-                    String.format("select * from root r where r.id ='%s'", this.collName), null).getQueryIterable();
-            List<DocumentCollection> collections = collIterable.toList();
-            if (collections.size() != 1) {
+            coll = DocumentDBConnectorUtil.GetDocumentCollection(client, db.getSelfLink(), this.collName.toString());
+            if (coll == null) {
                 throw new IOException(String.format("collection %s doesn't exist", this.collName));
             }
 
-            coll = collections.get(0);
             String query = this.query.toString();
             if (query != null && !query.isEmpty()) {
                 query = this.query.toString();
@@ -135,7 +156,12 @@ public class DocumentDBInputSplit extends InputSplit implements Writable, org.ap
                 query = "select * from root";
             }
 
-            this.documentIterator = client.queryDocuments(coll.getSelfLink(), query, null).getQueryIterator();
+            FeedOptions options = new FeedOptions();
+            options.setPageSize(MAX_PAGE_SIZE);
+            this.documentIterator = client.queryDocuments(
+                    coll.getSelfLink(),
+                    query,
+                    options).getQueryIterator();
         } catch (Exception e) {
             throw new IOException(e);
         }
