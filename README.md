@@ -1,6 +1,7 @@
 #Microsoft Azure DocumentDB Hadoop Connector
 
 ![](https://img.shields.io/github/release/azure/azure-documentdb-hadoop.svg)
+![](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-documentdb-hadoop.svg)
 ![](https://img.shields.io/github/issues/azure/azure-documentdb-hadoop.svg)
 
 This project provides a client library in Java that allows Microsoft Azure DocumentDB to act as an input source or output sink for MapReduce, Hive, and Pig jobs.
@@ -27,7 +28,7 @@ To get the binaries of this library as distributed by Microsoft, ready for use w
     <dependency>
     	<groupId>com.microsoft.azure</groupId>
     	<artifactId>azure-documentdb-hadoop</artifactId>
-    	<version>0.9.1</version>
+    	<version>0.9.2</version>
     </dependency>
 
 ##Requirements
@@ -40,7 +41,7 @@ To get the binaries of this library as distributed by Microsoft, ready for use w
 * HDI 3.1 ([Getting started with HDInsight](http://azure.microsoft.com/en-us/documentation/articles/hdinsight-get-started/))
 
 ## Dependencies
-* Microsoft Azure DocumentDB Java SDK 0.9.4 (com.microsoft.azure / azure-documentdb / 0.9.4)
+* Microsoft Azure DocumentDB Java SDK 0.9.5 (com.microsoft.azure / azure-documentdb / 0.9.5)
 
 When using Hive:
 * OpenX Technologies JsonSerde 1.3.1-SNAPSHOT (org.openx.data / json-serde-parent / 1.3.1-SNAPSHOT)
