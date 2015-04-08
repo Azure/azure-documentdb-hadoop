@@ -50,7 +50,7 @@ function bulkImport(docs, upsert) {
     function retrieveDoc(doc, continuation, callback) {
         var query = "select * from root r where r.id = '" + doc.id + "'";
         var requestOptions = { continuation : continuation }; 
-        collection.queryDocuments(collectionLink, query, requestOptions, function(err, retrievedDocs, responseOptions) {
+        var isAccepted = collection.queryDocuments(collectionLink, query, requestOptions, function(err, retrievedDocs, responseOptions) {
             if (err) throw err;
             
             if (retrievedDocs.length > 0) {
@@ -61,6 +61,7 @@ function bulkImport(docs, upsert) {
                 throw "Error in retrieving document: " + doc.id;
             }
           });
+        if (!isAccepted) getContext().getResponse().setBody(count);
     }
 
     // This is called when collection.createDocument is done in order to
