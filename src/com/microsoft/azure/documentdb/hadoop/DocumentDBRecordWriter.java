@@ -41,19 +41,19 @@ public class DocumentDBRecordWriter extends RecordWriter<Writable, DocumentDBWri
     private int currentStoredProcedureIndex = 0;
     
     public DocumentDBRecordWriter(Configuration conf, String host, String key, String dbName, String[] collNames,
-            String[] rangeIndexes, boolean upsert) throws IOException {
+            String[] rangeIndexes, boolean upsert, String offerType) throws IOException {
         try {
             ConnectionPolicy policy = ConnectionPolicy.GetDefault();
             policy.setUserAgentSuffix(DocumentDBConnectorUtil.UserAgentSuffix);
             DocumentClient client = new DocumentClient(host, key, policy,
                     ConsistencyLevel.Session);
-            
+
             Database db = DocumentDBConnectorUtil.GetDatabase(client, dbName);
             this.collections = new DocumentCollection[collNames.length];
             this.sprocs = new StoredProcedure[collNames.length];
             for (int i = 0; i < collNames.length; i++) {
                 this.collections[i] =  DocumentDBConnectorUtil.getOrCreateOutputCollection(client, db.getSelfLink(), collNames[i],
-                        rangeIndexes);
+                        rangeIndexes, offerType);
                 this.sprocs[i] = DocumentDBConnectorUtil.CreateBulkImportStoredProcedure(client, this.collections[i].getSelfLink());
             }
             

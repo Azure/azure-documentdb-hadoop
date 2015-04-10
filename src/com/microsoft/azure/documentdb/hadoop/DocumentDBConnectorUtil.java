@@ -24,6 +24,7 @@ import com.microsoft.azure.documentdb.IndexType;
 import com.microsoft.azure.documentdb.IndexingPath;
 import com.microsoft.azure.documentdb.IndexingPolicy;
 import com.microsoft.azure.documentdb.QueryIterable;
+import com.microsoft.azure.documentdb.RequestOptions;
 import com.microsoft.azure.documentdb.SqlParameter;
 import com.microsoft.azure.documentdb.SqlParameterCollection;
 import com.microsoft.azure.documentdb.SqlQuerySpec;
@@ -41,7 +42,7 @@ public class DocumentDBConnectorUtil {
     private final static String BULK_IMPORT_ID = "HadoopBulkImportSprocV1";
     private final static String BULK_IMPORT_PATH = "/BulkImportScript.js";
     
-    public static final String UserAgentSuffix = "HadoopConnector/0.9.2";
+    public static String UserAgentSuffix = " HadoopConnector/1.0.0";
     
     /**
      * Gets an output collection with the passed name ( if the collection already exists return it, otherwise create new one
@@ -51,13 +52,13 @@ public class DocumentDBConnectorUtil {
      * @param rangeIndexes An optional parameter that contain index paths for range indexes and it will be used to create an indexing policy.
      */
     public static DocumentCollection getOrCreateOutputCollection(DocumentClient client, String databaseSelfLink,
-            String collectionName, String[] rangeIndexes) throws DocumentClientException {
+            String collectionName, String[] rangeIndexes, String offerType) throws DocumentClientException {
         
         DocumentCollection outputCollection = DocumentDBConnectorUtil.GetDocumentCollection(client, databaseSelfLink, collectionName);
         
         if (outputCollection == null) {
             DocumentCollection outputColl = new DocumentCollection("{ 'id':'" + collectionName + "' }");
-            if (rangeIndexes.length > 0) {
+            if (rangeIndexes != null && rangeIndexes.length > 0) {
                 IndexingPolicy policy = new IndexingPolicy();
                 ArrayList<IndexingPath> indexingPaths = new ArrayList<IndexingPath>(rangeIndexes.length);
                 for (int i = 0; i < rangeIndexes.length; i++) {
@@ -73,12 +74,14 @@ public class DocumentDBConnectorUtil {
                 policy.getIncludedPaths().addAll(indexingPaths);
                 outputColl.setIndexingPolicy(policy);
             }
-            
+
             BackoffExponentialRetryPolicy retryPolicy = new BackoffExponentialRetryPolicy();
             
             while(retryPolicy.shouldRetry()) {
                 try {
-                    outputCollection = client.createCollection(databaseSelfLink, outputColl, null).getResource();
+                    RequestOptions options = new RequestOptions();
+                    options.setOfferType(offerType);
+                    outputCollection = client.createCollection(databaseSelfLink, outputColl, options).getResource();
                     break;
                 } catch (Exception e) {
                     retryPolicy.errorOccured(e);
@@ -107,7 +110,10 @@ public class DocumentDBConnectorUtil {
             }
         }
         
-        if(collections.size() == 0) return null;
+        if(collections.size() == 0) {
+            return null;
+        }
+        
         return collections.get(0);
     }
     
@@ -128,7 +134,10 @@ public class DocumentDBConnectorUtil {
             }
         }
         
-        if(databases.size() == 0) return null;
+        if(databases.size() == 0) {
+            return null;
+        }
+        
         return databases.get(0);
     }
     
@@ -177,10 +186,11 @@ public class DocumentDBConnectorUtil {
      */
     public static void executeWriteStoredProcedure(final DocumentClient client, String collectionSelfLink, final StoredProcedure sproc,
             List<Document> allDocs, final boolean upsert) {
-        int currentCount = 0;
         
+        int currentCount = 0;
+            
         while (currentCount < allDocs.size())
-        {
+            {
             String []jsonArrayString = CreateBulkInsertScriptArguments(allDocs, currentCount, MAX_SCRIPT_SIZE);
             BackoffExponentialRetryPolicy retryPolicy = new BackoffExponentialRetryPolicy();
             String response = null;
@@ -193,7 +203,7 @@ public class DocumentDBConnectorUtil {
                     retryPolicy.errorOccured(e);  
                 }
             }
-            
+    
             int createdCount = Integer.parseInt(response);
             currentCount += createdCount;
         }
