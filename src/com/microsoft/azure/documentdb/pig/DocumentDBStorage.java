@@ -57,7 +57,11 @@ public class DocumentDBStorage extends StoreFunc implements StoreMetadata {
         this(masterkey, dbName, outputCollections, null, null, null);
     }
     
-    public DocumentDBStorage(String masterkey, String dbName, String outputCollections, String rangeindexed, String upsert, String offerType) {
+    public DocumentDBStorage(String masterkey, String dbName, String outputCollections, String offerType){
+        this(masterkey, dbName, outputCollections, offerType, null, null);
+    }
+    
+    public DocumentDBStorage(String masterkey, String dbName, String outputCollections, String offerType, String rangeindexed, String upsert) {
         this.masterkey = masterkey;
         this.dbName = dbName;
         this.outputCollections =  outputCollections;
@@ -65,7 +69,7 @@ public class DocumentDBStorage extends StoreFunc implements StoreMetadata {
         this.rangeIndexed = rangeindexed;
         this.offerType = offerType;
         
-        //Set the userAgent to pig storage
+        // Set the userAgent to pig storage
         if (!DocumentDBConnectorUtil.UserAgentSuffix.contains(DocumentDBStorage.PIG_STORAGE_USERAGENT)) {
             DocumentDBConnectorUtil.UserAgentSuffix += DocumentDBStorage.PIG_STORAGE_USERAGENT;
         }
