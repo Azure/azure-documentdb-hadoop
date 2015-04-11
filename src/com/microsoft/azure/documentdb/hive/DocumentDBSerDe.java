@@ -17,6 +17,7 @@ import org.openx.data.jsonserde.JsonSerDe;
 import org.openx.data.jsonserde.json.JSONObject;
 
 import com.microsoft.azure.documentdb.Document;
+import com.microsoft.azure.documentdb.hadoop.DocumentDBConnectorUtil;
 import com.microsoft.azure.documentdb.hadoop.DocumentDBWritable;
 
 /**
@@ -25,13 +26,18 @@ import com.microsoft.azure.documentdb.hadoop.DocumentDBWritable;
  *
  */
 public class DocumentDBSerDe implements SerDe {
-
+    private static final String HIVE_USERAGENT = " HiveConnector/1.0.0";
     private DocumentDBWritable cachedWritable;
     private JsonSerDe jsonSerde;
 
     public DocumentDBSerDe() {
         this.cachedWritable = new DocumentDBWritable();
         this.jsonSerde = new JsonSerDe();
+        
+        // Set the user-agent to hive.
+        if (!DocumentDBConnectorUtil.UserAgentSuffix.contains(DocumentDBSerDe.HIVE_USERAGENT)) {
+            DocumentDBConnectorUtil.UserAgentSuffix += DocumentDBSerDe.HIVE_USERAGENT;
+        }
     }
 
     /**

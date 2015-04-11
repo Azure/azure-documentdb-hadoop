@@ -53,6 +53,11 @@ public class ConfigurationUtil {
     public static final String OUTPUT_RANGE_INDEXED = "DocumentDB.rangeIndex";
     
     /**
+     * The offer type of the output collections. 
+     */
+    public static final String OUTPUT_COLLECTIONS_OFFER = "DocumentDB.outputCollectionsOffer";
+    
+    /**
      * An upsert option, true by default. This can be disabled by setting it to "false"
      */
     public static final String UPSERT = "DocumentDB.upsert";
@@ -145,6 +150,16 @@ public class ConfigurationUtil {
     public final static boolean getUpsert(Configuration conf) {
         String upsert = conf.get(UPSERT);
         return (upsert != null && upsert.equalsIgnoreCase("false")) ? false : true;
+    }
+    
+    /**
+     * Gets the DocumentDB.outputCollectionsOffer from the Configuration object.
+     * @param conf job configuration object
+     * @return the value of documentdb.outputCollectionsOffer option
+     */
+    public final static String getOutputCollectionsOffer(Configuration conf) {
+        String outputCollectionsOffer = conf.get(OUTPUT_COLLECTIONS_OFFER);
+        return (outputCollectionsOffer != null) ? outputCollectionsOffer : "S3";
     }
     
     /**

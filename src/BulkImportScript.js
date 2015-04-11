@@ -60,8 +60,9 @@ function bulkImport(docs, upsert) {
             } else {
                 throw "Error in retrieving document: " + doc.id;
             }
-          });
-        if (!isAccepted) getContext().getResponse().setBody(count);
+        });
+        
+        if (!isAccepted) getContext().getResponse().setBody(count); 
     }
 
     // This is called when collection.createDocument is done in order to

@@ -27,6 +27,7 @@ import org.json.JSONException;
 
 import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.documentdb.hadoop.ConfigurationUtil;
+import com.microsoft.azure.documentdb.hadoop.DocumentDBConnectorUtil;
 import com.microsoft.azure.documentdb.hadoop.DocumentDBOutputFormat;
 import com.microsoft.azure.documentdb.hadoop.DocumentDBRecordWriter;
 import com.microsoft.azure.documentdb.hadoop.DocumentDBWritable;
@@ -35,6 +36,7 @@ import com.microsoft.azure.documentdb.hadoop.DocumentDBWritable;
  * An implementation of Pig StoreFunc for documentdb.
  */
 public class DocumentDBStorage extends StoreFunc implements StoreMetadata {
+    private static final String PIG_STORAGE_USERAGENT = " PigConnectorStorage/1.0.0";
     private String masterkey = null;
     private DocumentDBRecordWriter writer = null;
     protected ResourceSchema schema = null;
@@ -42,6 +44,7 @@ public class DocumentDBStorage extends StoreFunc implements StoreMetadata {
     private String outputCollections;
     private String rangeIndexed;
     private String upsert;
+    private String offerType;
     private String udfContextSignature = null;
     
     // Pig specific settings
@@ -51,15 +54,25 @@ public class DocumentDBStorage extends StoreFunc implements StoreMetadata {
     private static final Log LOG = LogFactory.getLog(DocumentDBStorage.class);
 
     public DocumentDBStorage(String masterkey, String dbName, String outputCollections){
-        this(masterkey, dbName, outputCollections, null, null);
+        this(masterkey, dbName, outputCollections, null, null, null);
     }
     
-    public DocumentDBStorage(String masterkey, String dbName, String outputCollections, String rangeindexed, String upsert) {
+    public DocumentDBStorage(String masterkey, String dbName, String outputCollections, String offerType){
+        this(masterkey, dbName, outputCollections, offerType, null, null);
+    }
+    
+    public DocumentDBStorage(String masterkey, String dbName, String outputCollections, String offerType, String rangeindexed, String upsert) {
         this.masterkey = masterkey;
         this.dbName = dbName;
         this.outputCollections =  outputCollections;
         this.upsert = upsert;
         this.rangeIndexed = rangeindexed;
+        this.offerType = offerType;
+        
+        // Set the userAgent to pig storage
+        if (!DocumentDBConnectorUtil.UserAgentSuffix.contains(DocumentDBStorage.PIG_STORAGE_USERAGENT)) {
+            DocumentDBConnectorUtil.UserAgentSuffix += DocumentDBStorage.PIG_STORAGE_USERAGENT;
+        }
     }
     
     /**
@@ -85,6 +98,10 @@ public class DocumentDBStorage extends StoreFunc implements StoreMetadata {
         
         if (this.rangeIndexed != null) {
             conf.set(ConfigurationUtil.OUTPUT_RANGE_INDEXED, this.rangeIndexed);
+        }
+        
+        if(this.offerType != null) {
+            conf.set(ConfigurationUtil.OUTPUT_COLLECTIONS_OFFER, this.offerType);
         }
         
         conf.setBoolean(MRJobConfig.MAPREDUCE_JOB_USER_CLASSPATH_FIRST, true);

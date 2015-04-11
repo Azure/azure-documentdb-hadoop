@@ -30,6 +30,7 @@ import org.apache.pig.backend.hadoop.executionengine.mapReduceLayer.PigSplit;
 
 import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.documentdb.hadoop.ConfigurationUtil;
+import com.microsoft.azure.documentdb.hadoop.DocumentDBConnectorUtil;
 import com.microsoft.azure.documentdb.hadoop.DocumentDBInputFormat;
 import com.microsoft.azure.documentdb.hadoop.DocumentDBWritable;
 
@@ -37,6 +38,7 @@ import com.microsoft.azure.documentdb.hadoop.DocumentDBWritable;
  * A Pig data loader from DocumentDB.
  */
 public class DocumentDBLoader extends LoadFunc{
+    private static final String PIG_LOADER_USERAGENT = " PigConnectorLoader/1.0.0";
     private String masterkey = null;
     private RecordReader reader = null;
     private ResourceFieldSchema[] fields;
@@ -58,6 +60,11 @@ public class DocumentDBLoader extends LoadFunc{
         // Comma separated collection names
         this.inputCollections = inputCollections; 
         this.query = query;
+        
+        //Set the userAgent to pig loader
+        if (!DocumentDBConnectorUtil.UserAgentSuffix.contains(DocumentDBLoader.PIG_LOADER_USERAGENT)) {
+            DocumentDBConnectorUtil.UserAgentSuffix += DocumentDBLoader.PIG_LOADER_USERAGENT;
+        }
     }
 
     /**
