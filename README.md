@@ -33,7 +33,7 @@ To get the binaries of this library as distributed by Microsoft, ready for use w
 
 ###Option 5: HDInsight
 
-Install the DocumentDB Hadoop Connector onto HDInsight clusters through custom action scripts. Full instructions can be found [here](http://azure.microsoft.com/en-us/documentation/articles/hdinsight-get-started/). 
+Install the DocumentDB Hadoop Connector onto HDInsight clusters through custom action scripts. Full instructions can be found [here](https://azure.microsoft.com/documentation/articles/documentdb-run-hadoop-with-hdinsight/). 
 
 ##Requirements
 * Java Development Kit 7
@@ -45,7 +45,7 @@ Install the DocumentDB Hadoop Connector onto HDInsight clusters through custom a
 * Apache Hadoop & YARN 2.6.0
     * Apache Pig 0.14.0
     * Apache Hive $ HCatalog 0.14.0
-* HDI 3.1 ([Getting started with HDInsight](http://azure.microsoft.com/en-us/documentation/articles/hdinsight-get-started/))
+* HDI 3.1 ([Getting started with HDInsight](https://azure.microsoft.com/documentation/articles/documentdb-run-hadoop-with-hdinsight/))
 * HDI 3.2
 
 ## Dependencies
@@ -169,7 +169,7 @@ If you would like to become an active contributor to this project please follow 
 If you encounter any bugs with the library please file an issue in the [Issues](https://github.com/Azure/azure-documentdb-hadoop/issues) section of the project.
 
 ##Learn More
-* [DocumentDB with HDInsight Tutorial](http://azure.microsoft.com/en-us/documentation/articles/documentdb-run-hadoop-with-hdinsight/)
+* [DocumentDB with HDInsight Tutorial](https://azure.microsoft.com/documentation/articles/documentdb-run-hadoop-with-hdinsight/)
 * [Official Hadoop Documentation](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 * [Azure Developer Center](http://azure.microsoft.com/en-us/develop/java/)
 * [Azure DocumentDB Service](http://azure.microsoft.com/en-us/documentation/services/documentdb/)
