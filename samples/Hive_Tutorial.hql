@@ -8,7 +8,7 @@ add JAR <path to DocumentDB Hadoop jar/azure-documentdb-hadoop-SNAPSHOT.jar>;
                
 -- Create a Hive Table from DocumentDB ids and timestamps          
 drop table DocumentDB_timestamps; 
-create external table DocumentDB_timestamps(id string, ts INT) 
+create external table DocumentDB_timestamps(id string, ts BIGINT) 
 stored by 'com.microsoft.azure.documentdb.hive.DocumentDBStorageHandler' 
 tblproperties ( 
 'DocumentDB.endpoint' = 'DocumentDB Endpoint', 
