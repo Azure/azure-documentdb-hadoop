@@ -23,7 +23,6 @@ import org.apache.pig.StoreMetadata;
 import org.apache.pig.ResourceSchema.ResourceFieldSchema;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.util.UDFContext;
-import org.json.JSONException;
 
 import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.documentdb.hadoop.ConfigurationUtil;
@@ -42,7 +41,7 @@ public class DocumentDBStorage extends StoreFunc implements StoreMetadata {
     protected ResourceSchema schema = null;
     private String dbName;
     private String outputCollections;
-    private String rangeIndexed;
+    private String stringPrecision;
     private String upsert;
     private String offerType;
     private String udfContextSignature = null;
@@ -61,12 +60,12 @@ public class DocumentDBStorage extends StoreFunc implements StoreMetadata {
         this(masterkey, dbName, outputCollections, offerType, null, null);
     }
     
-    public DocumentDBStorage(String masterkey, String dbName, String outputCollections, String offerType, String rangeindexed, String upsert) {
+    public DocumentDBStorage(String masterkey, String dbName, String outputCollections, String offerType, String outputStringPrecision, String upsert) {
         this.masterkey = masterkey;
         this.dbName = dbName;
         this.outputCollections =  outputCollections;
         this.upsert = upsert;
-        this.rangeIndexed = rangeindexed;
+        this.stringPrecision = outputStringPrecision;
         this.offerType = offerType;
         
         // Set the userAgent to pig storage
@@ -95,11 +94,11 @@ public class DocumentDBStorage extends StoreFunc implements StoreMetadata {
         if (this.upsert != null) {
             conf.set(ConfigurationUtil.UPSERT, this.upsert);
         }
-        
-        if (this.rangeIndexed != null) {
-            conf.set(ConfigurationUtil.OUTPUT_RANGE_INDEXED, this.rangeIndexed);
+
+        if (this.stringPrecision != null) {
+            conf.set(ConfigurationUtil.OUTPUT_STRING_PRECISION, this.stringPrecision);
         }
-        
+
         if(this.offerType != null) {
             conf.set(ConfigurationUtil.OUTPUT_COLLECTIONS_OFFER, this.offerType);
         }

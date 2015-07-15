@@ -15,15 +15,16 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.microsoft.azure.documentdb.DataType;
 import com.microsoft.azure.documentdb.Database;
 import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.documentdb.DocumentClient;
 import com.microsoft.azure.documentdb.DocumentClientException;
 import com.microsoft.azure.documentdb.DocumentCollection;
-import com.microsoft.azure.documentdb.IndexType;
-import com.microsoft.azure.documentdb.IndexingPath;
+import com.microsoft.azure.documentdb.IncludedPath;
 import com.microsoft.azure.documentdb.IndexingPolicy;
 import com.microsoft.azure.documentdb.QueryIterable;
+import com.microsoft.azure.documentdb.RangeIndex;
 import com.microsoft.azure.documentdb.RequestOptions;
 import com.microsoft.azure.documentdb.SqlParameter;
 import com.microsoft.azure.documentdb.SqlParameterCollection;
@@ -42,38 +43,25 @@ public class DocumentDBConnectorUtil {
     private final static String BULK_IMPORT_ID = "HadoopBulkImportSprocV1";
     private final static String BULK_IMPORT_PATH = "/BulkImportScript.js";
     
-    public static String UserAgentSuffix = " HadoopConnector/1.0.0";
+    public static String UserAgentSuffix = " HadoopConnector/1.1.0";
     
     /**
      * Gets an output collection with the passed name ( if the collection already exists return it, otherwise create new one
      * @param client The DocumentClient instance.
      * @param databaseSelfLink the self link of the passed database.
-     * @param collectionName The id of the output collection.
-     * @param rangeIndexes An optional parameter that contain index paths for range indexes and it will be used to create an indexing policy.
+     * @param collectionId The id of the output collection.
+     * @param outputStringPrecision An optional parameter that contains the default string precision to be used to create an indexing policy.
+     * @param offerType An optional parameter that contains the offer type of the output collection.
      */
     public static DocumentCollection getOrCreateOutputCollection(DocumentClient client, String databaseSelfLink,
-            String collectionName, String[] rangeIndexes, String offerType) throws DocumentClientException {
-        
-        DocumentCollection outputCollection = DocumentDBConnectorUtil.GetDocumentCollection(client, databaseSelfLink, collectionName);
+            String collectionId, int outputStringPrecision, String offerType) throws DocumentClientException {
+
+        DocumentCollection outputCollection = DocumentDBConnectorUtil.GetDocumentCollection(client, databaseSelfLink, collectionId);
         
         if (outputCollection == null) {
-            DocumentCollection outputColl = new DocumentCollection("{ 'id':'" + collectionName + "' }");
-            if (rangeIndexes != null && rangeIndexes.length > 0) {
-                IndexingPolicy policy = new IndexingPolicy();
-                ArrayList<IndexingPath> indexingPaths = new ArrayList<IndexingPath>(rangeIndexes.length);
-                for (int i = 0; i < rangeIndexes.length; i++) {
-                    IndexingPath path = new IndexingPath();
-                    path.setIndexType(IndexType.Range);
-                    path.setPath(rangeIndexes[i]);
-                    indexingPaths.add(path);
-                }
+            DocumentCollection outputColl = new DocumentCollection("{ 'id':'" + collectionId + "' }");
 
-                IndexingPath defaultPath = new IndexingPath();
-                defaultPath.setPath("/");
-                indexingPaths.add(defaultPath);
-                policy.getIncludedPaths().addAll(indexingPaths);
-                outputColl.setIndexingPolicy(policy);
-            }
+            outputColl.setIndexingPolicy(DocumentDBConnectorUtil.getOutputIndexingPolicy(outputStringPrecision));
 
             BackoffExponentialRetryPolicy retryPolicy = new BackoffExponentialRetryPolicy();
             
@@ -92,6 +80,12 @@ public class DocumentDBConnectorUtil {
         return outputCollection;
     }
     
+    /**
+     * Gets an output collection with the passed name ( if the collection already exists return it, otherwise create new one
+     * @param client The DocumentClient instance.
+     * @param databaseSelfLink the self link of the passed database.
+     * @param collectionId The id of the output collection.
+     */
     public static DocumentCollection GetDocumentCollection(DocumentClient client, String databaseSelfLink, String collectionId) {
         BackoffExponentialRetryPolicy retryPolicy = new BackoffExponentialRetryPolicy();
         QueryIterable<DocumentCollection> collIterable = client.queryCollections(
@@ -268,5 +262,24 @@ public class DocumentDBConnectorUtil {
         if (doc.getId() == null) {
             doc.setId(UUID.randomUUID().toString());
         }
+    }
+    
+    private static IndexingPolicy getOutputIndexingPolicy(int outputStringPrecision) {
+        // Setup indexing policy.
+        IndexingPolicy policy = new IndexingPolicy();
+        ArrayList<IncludedPath> includedPaths = new ArrayList<IncludedPath>();
+
+        // All paths.
+        IncludedPath path = new IncludedPath();
+        RangeIndex stringIndex = new RangeIndex(DataType.String);
+        stringIndex.setPrecision(outputStringPrecision);
+        path.getIndexes().add(stringIndex);
+        RangeIndex numberIndex = new RangeIndex(DataType.Number);
+        numberIndex.setPrecision(-1);  // Maximum precision
+        path.getIndexes().add(numberIndex);
+        path.setPath("/*");
+        includedPaths.add(path);
+        policy.setIncludedPaths(includedPaths);
+        return policy;
     }
 }

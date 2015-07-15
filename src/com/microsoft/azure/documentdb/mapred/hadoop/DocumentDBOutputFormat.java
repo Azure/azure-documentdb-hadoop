@@ -47,7 +47,8 @@ public class DocumentDBOutputFormat implements OutputFormat<Writable, DocumentDB
 
         return new DocumentDBRecordWriter(conf, ConfigurationUtil.getDBEndpoint(conf),
                 ConfigurationUtil.getDBKey(conf), ConfigurationUtil.getDBName(conf),
-                ConfigurationUtil.getOutputCollectionNames(conf), ConfigurationUtil.getRangeIndex(conf),
+                ConfigurationUtil.getOutputCollectionNames(conf),
+                ConfigurationUtil.getOutputStringPrecision(conf),
                 ConfigurationUtil.getUpsert(conf), ConfigurationUtil.getOutputCollectionsOffer(conf));
     }
 }

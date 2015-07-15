@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.microsoft.azure</groupId>
   <artifactId>azure-documentdb-hadoop</artifactId>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <packaging>jar</packaging>
 
   <name>Azure-DocumentDB-Hadoop</name>
@@ -227,7 +227,7 @@
     <dependency>
         <groupId>com.microsoft.azure</groupId>
         <artifactId>azure-documentdb</artifactId>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
     </dependency>
     <dependency>
         <groupId>org.apache.pig</groupId>

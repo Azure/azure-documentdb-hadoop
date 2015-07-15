@@ -16,6 +16,7 @@ import org.apache.hadoop.mapred.Reporter;
 
 import com.microsoft.azure.documentdb.ConnectionPolicy;
 import com.microsoft.azure.documentdb.ConsistencyLevel;
+import com.microsoft.azure.documentdb.DataType;
 import com.microsoft.azure.documentdb.Database;
 import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.documentdb.DocumentClient;
@@ -45,7 +46,7 @@ public class DocumentDBRecordWriter implements RecordWriter<Writable, DocumentDB
     private int currentStoredProcedureIndex = 0;
     
     public DocumentDBRecordWriter(JobConf conf, String host, String key, String dbName, String[] collNames,
-            String[] rangeIndexes, boolean upsert, String offerType) throws IOException {
+            int outputStringPrecision, boolean upsert, String offerType) throws IOException {
         DocumentClient client;
         try {
             ConnectionPolicy policy = ConnectionPolicy.GetDefault();
@@ -57,7 +58,7 @@ public class DocumentDBRecordWriter implements RecordWriter<Writable, DocumentDB
             this.sprocs = new StoredProcedure[collNames.length];
             for (int i = 0; i < collNames.length; i++) {
                 this.collections[i] =  DocumentDBConnectorUtil.getOrCreateOutputCollection(client, db.getSelfLink(), collNames[i],
-                        rangeIndexes, offerType);
+                        outputStringPrecision, offerType);
                 this.sprocs[i] = DocumentDBConnectorUtil.CreateBulkImportStoredProcedure(client, this.collections[i].getSelfLink());
             }
             

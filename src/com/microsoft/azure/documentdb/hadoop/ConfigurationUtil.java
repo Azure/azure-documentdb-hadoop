@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 
 import com.google.common.collect.ImmutableSet;
@@ -48,10 +49,10 @@ public class ConfigurationUtil {
     public static final String QUERY = "DocumentDB.query";
     
     /**
-     * Comma separated Property paths to range index in the output collections. 
+     * Precision of the output collections' string indexes . 
      */
-    public static final String OUTPUT_RANGE_INDEXED = "DocumentDB.rangeIndex";
-    
+    public static final String OUTPUT_STRING_PRECISION = "DocumentDB.outputStringPrecision";
+
     /**
      * The offer type of the output collections. 
      */
@@ -61,6 +62,8 @@ public class ConfigurationUtil {
      * An upsert option, true by default. This can be disabled by setting it to "false"
      */
     public static final String UPSERT = "DocumentDB.upsert";
+
+    public static final int DEFAULT_STRING_PRECISION = -1; // Maxmum precision.
 
     /**
      * Gets the DocumentDB.db from the Configuration object.
@@ -126,20 +129,30 @@ public class ConfigurationUtil {
     }
     
     /**
-     * Gets the DocumentDB.rangeIndex from the Configuration object.
+     * Gets the DocumentDB.outputStringPrecision from the Configuration object.
      * @param conf job configuration object
-     * @return array of property paths to range index.
+     * @return the string precision of the output collections.
      */
-    public final static String[] getRangeIndex(Configuration conf) {
-        String rangeIndexed = conf.get(OUTPUT_RANGE_INDEXED);
-        String[] propertyNames = null;
-        if (rangeIndexed != null) {
-            propertyNames = rangeIndexed.split(",");
-        } else {
-            propertyNames = new String[] {};
+    public final static int getOutputStringPrecision(Configuration conf) {
+        String value = conf.get(OUTPUT_STRING_PRECISION);
+
+        Integer stringPrecision = new Integer(DEFAULT_STRING_PRECISION);
+
+        if (StringUtils.isEmpty(value)) {
+            return stringPrecision;
         }
-        
-        return propertyNames;
+
+        try {
+            stringPrecision = Integer.valueOf(value);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("outputStringPrecision is expected to be an integer.", e);
+        }
+
+        if (stringPrecision < -1 || stringPrecision == 0) {
+            throw new IllegalArgumentException("outputStringPrecision can only be -1 or a positive number.");
+        }
+
+        return stringPrecision;
     }
 
     /**

@@ -20,10 +20,6 @@ import com.microsoft.azure.documentdb.Database;
 import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.documentdb.DocumentClient;
 import com.microsoft.azure.documentdb.DocumentCollection;
-import com.microsoft.azure.documentdb.QueryIterable;
-import com.microsoft.azure.documentdb.SqlParameter;
-import com.microsoft.azure.documentdb.SqlParameterCollection;
-import com.microsoft.azure.documentdb.SqlQuerySpec;
 import com.microsoft.azure.documentdb.StoredProcedure;
 
 /**
@@ -41,7 +37,7 @@ public class DocumentDBRecordWriter extends RecordWriter<Writable, DocumentDBWri
     private int currentStoredProcedureIndex = 0;
     
     public DocumentDBRecordWriter(Configuration conf, String host, String key, String dbName, String[] collNames,
-            String[] rangeIndexes, boolean upsert, String offerType) throws IOException {
+            int outputStringPrecision, boolean upsert, String offerType) throws IOException {
         try {
             ConnectionPolicy policy = ConnectionPolicy.GetDefault();
             policy.setUserAgentSuffix(DocumentDBConnectorUtil.UserAgentSuffix);
@@ -53,7 +49,7 @@ public class DocumentDBRecordWriter extends RecordWriter<Writable, DocumentDBWri
             this.sprocs = new StoredProcedure[collNames.length];
             for (int i = 0; i < collNames.length; i++) {
                 this.collections[i] =  DocumentDBConnectorUtil.getOrCreateOutputCollection(client, db.getSelfLink(), collNames[i],
-                        rangeIndexes, offerType);
+                        outputStringPrecision, offerType);
                 this.sprocs[i] = DocumentDBConnectorUtil.CreateBulkImportStoredProcedure(client, this.collections[i].getSelfLink());
             }
             
