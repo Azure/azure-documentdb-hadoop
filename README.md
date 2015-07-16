@@ -28,7 +28,7 @@ To get the binaries of this library as distributed by Microsoft, ready for use w
     <dependency>
     	<groupId>com.microsoft.azure</groupId>
     	<artifactId>azure-documentdb-hadoop</artifactId>
-    	<version>1.0.0</version>
+    	<version>1.1.0</version>
     </dependency>
 
 ###Option 5: HDInsight
@@ -49,7 +49,7 @@ Install the DocumentDB Hadoop Connector onto HDInsight clusters through custom a
 * HDI 3.2
 
 ## Dependencies
-* Microsoft Azure DocumentDB Java SDK 1.0.0 (com.microsoft.azure / azure-documentdb / 1.0.0)
+* Microsoft Azure DocumentDB Java SDK 1.1.0 (com.microsoft.azure / azure-documentdb / 1.1.0)
 
 When using Hive:
 * OpenX Technologies JsonSerde 1.3.1-SNAPSHOT (org.openx.data / json-serde-parent / 1.3.1-SNAPSHOT)
@@ -80,9 +80,9 @@ To use this client library with Azure DocumentDB, you need to first [create an a
     final String inputCollNames = "Your DocumentDB Input Collection Name[s]";
     final String outputCollNames = "Your DocumentDB Output Collection Name[s]";
     final String query = "[Optional] Your DocumentDB Query";
+    final String outputStringPrecision = "[Optional] Number of bytes to use for String indexes"
     final String offerType = "[Optional] Your performance level for Output Collection Creations";
     final String upsert = "[Optional] Bool to disable or enable document upsert";
-    final String rangeindices = "[Optional] Your document property name[s] that should have a range index";
 
     conf.set(ConfigurationUtil.DB_HOST, host);
     conf.set(ConfigurationUtil.DB_KEY, key);
@@ -90,9 +90,9 @@ To use this client library with Azure DocumentDB, you need to first [create an a
     conf.set(ConfigurationUtil.INPUT_COLLECTION_NAMES, inputCollNames);
     conf.set(ConfigurationUtil.OUTPUT_COLLECTION_NAMES, outputCollNames);
     conf.set(ConfigurationUtil.QUERY, query);
+    conf.set(ConfigurationUtil.OUTPUT_STRING_PRECISION, outputStringPrecision);
     conf.set(ConfigurationUtil.OUTPUT_COLLECTIONS_OFFER, offerType);
     conf.set(ConfigurationUtil.UPSERT, upsert);
-    conf.set(ConfigurationUtil.OUTPUT_RANGE_INDEXED, rangeindices);
 ```
 
 Full MapReduce sample can be found [here](https://github.com/Azure/azure-documentdb-hadoop/blob/master/samples/MapReduceTutorial.java).
@@ -107,7 +107,7 @@ Full MapReduce sample can be found [here](https://github.com/Azure/azure-documen
         'DocumentDB.key' = 'Your DocumentDB Primary Key',
         'DocumentDB.db' = 'Your DocumentDB Database Name',
         'DocumentDB.inputCollections' = 'Your DocumentDB Input Collection Name[s]',
-        '[Optional] DocumentDB.query' = '[Optional] Your DocumentDB Query' );
+        'DocumentDB.query' = '[Optional] Your DocumentDB Query' );
 ```
 
 #####Storing data to DocumentDB Example
@@ -119,9 +119,9 @@ Full MapReduce sample can be found [here](https://github.com/Azure/azure-documen
         'DocumentDB.key' = 'Your DocumentDB Primary Key', 
         'DocumentDB.db' = 'Your DocumentDB Database Name', 
         'DocumentDB.outputCollections' = 'Your DocumentDB Output Collection Name[s]',
-        '[Optional] DocumentDB.outputCollectionsOffer' = '[Optional] Your performance level for Output Collection Creations",
-        '[Optional] DocumentDB.upsert' = '[Optional] Bool to disable or enable document upsert',
-        '[Optional] DocumentDB.rangeIndex' = '[Optional] Your document property name[s] that should have a range index');
+        '[Optional] DocumentDB.outputStringPrecision' = '[Optional] Number of bytes to use for String indexes',
+        '[Optional] DocumentDB.outputCollectionsOffer' = '[Optional] Your performance level for Output Collection Creations',
+        '[Optional] DocumentDB.upsert' = '[Optional] Bool to disable or enable document upsert');
     INSERT INTO TABLE Hive_DocumentDB_Table
 ```
 Full Hive sample can be found [here](https://github.com/Azure/azure-documentdb-hadoop/blob/master/samples/Hive_Tutorial.hql).
@@ -144,15 +144,15 @@ Full Hive sample can be found [here](https://github.com/Azure/azure-documentdb-h
         'DocumentDB Primary Key',
         'DocumentDB Database Name',
         'DocumentDB Output Collection Name[s]',
+        '[Optional] Number of bytes to use for String indexes',
         '[Optional] Your performance level for Output Collection Creations',
-        '[Optional] Bool to disable or enable document upsert',
-        '[Optional] Your document property name[s] that should have a range index');
+        '[Optional] Bool to disable or enable document upsert');
 ```
 Full Pig sample can be found [here](https://github.com/Azure/azure-documentdb-hadoop/blob/master/samples/Pig_Tutorial.pig).
 
 ##Remarks
 * When outputting to DocumentDB, your output collection will require capacity for an [additional stored procedure](http://azure.microsoft.com/en-us/documentation/articles/documentdb-limits/). The stored procedure will remain in your collection for reuse.
-* You must set range indices for your collection if you are pushing range queries to DocumentDB. More information can be found [here](http://azure.microsoft.com/en-us/documentation/articles/documentdb-indexing-policies/).
+* The Hadoop Connector automatically sets your indexes to range indexes with max precision on strings and numbers. More information can be found [here](http://azure.microsoft.com/en-us/documentation/articles/documentdb-indexing-policies/).
 * Connector supports configurable *upsert* option. *Upsert* configuration is automatically set to *true* and will overwrite documents within the same collection with the same *id*. 
 * Reads and writes to DocumentDB will be counted against your provisioned throughput for each collection.
 * Output to DocumentDB collections is done in batch round robin.
