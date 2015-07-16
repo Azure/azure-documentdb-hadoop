@@ -144,8 +144,8 @@ Full Hive sample can be found [here](https://github.com/Azure/azure-documentdb-h
         'DocumentDB Primary Key',
         'DocumentDB Database Name',
         'DocumentDB Output Collection Name[s]',
-        '[Optional] Number of bytes to use for String indexes',
         '[Optional] Your performance level for Output Collection Creations',
+        '[Optional] Number of bytes to use for String indexes',
         '[Optional] Bool to disable or enable document upsert');
 ```
 Full Pig sample can be found [here](https://github.com/Azure/azure-documentdb-hadoop/blob/master/samples/Pig_Tutorial.pig).
