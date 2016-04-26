@@ -67,12 +67,21 @@ public class DocumentDBRecordWriter extends RecordWriter<Writable, DocumentDBWri
      */
     public void write(Writable key, DocumentDBWritable value) throws IOException {
         Document doc = value.getDoc();
-        DocumentDBConnectorUtil.addIdIfMissing(doc);
-        this.cachedDocs.add(doc);
+        DocumentCollection targetCollection = this.collections[this.currentStoredProcedureIndex];
+        currentStoredProcedureIndex = (this.currentStoredProcedureIndex + 1) % this.collections.length;
         this.documentsProcessed++;
-        if (documentsProcessed % MAX_DOC_SIZE == 0) {
-            this.writeCurrentBatch();
-            LOG.info(String.format("wrote %d documents", this.documentsProcessed));
+        if(targetCollection.getPartitionKey() != null) {
+            DocumentDBConnectorUtil.createDocument(this.client, targetCollection.getSelfLink(), doc, this.enableUpsert);
+            if (documentsProcessed % MAX_DOC_SIZE == 0) {
+            	LOG.info(String.format("wrote %d documents", this.documentsProcessed));
+            }
+        } else {
+            DocumentDBConnectorUtil.addIdIfMissing(doc);
+            this.cachedDocs.add(doc);
+            if (this.documentsProcessed % MAX_DOC_SIZE == 0) {
+                this.writeCurrentBatch();
+                LOG.info(String.format("wrote %d documents", this.documentsProcessed));
+            }
         }
     }
 

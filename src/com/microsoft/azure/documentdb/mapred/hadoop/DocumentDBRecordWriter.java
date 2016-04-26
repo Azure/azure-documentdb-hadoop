@@ -16,17 +16,11 @@ import org.apache.hadoop.mapred.Reporter;
 
 import com.microsoft.azure.documentdb.ConnectionPolicy;
 import com.microsoft.azure.documentdb.ConsistencyLevel;
-import com.microsoft.azure.documentdb.DataType;
 import com.microsoft.azure.documentdb.Database;
 import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.documentdb.DocumentClient;
 import com.microsoft.azure.documentdb.DocumentCollection;
-import com.microsoft.azure.documentdb.QueryIterable;
-import com.microsoft.azure.documentdb.SqlParameter;
-import com.microsoft.azure.documentdb.SqlParameterCollection;
-import com.microsoft.azure.documentdb.SqlQuerySpec;
 import com.microsoft.azure.documentdb.StoredProcedure;
-import com.microsoft.azure.documentdb.hadoop.BackoffExponentialRetryPolicy;
 import com.microsoft.azure.documentdb.hadoop.DocumentDBWritable;
 import com.microsoft.azure.documentdb.hadoop.DocumentDBConnectorUtil;
 
@@ -84,12 +78,21 @@ public class DocumentDBRecordWriter implements RecordWriter<Writable, DocumentDB
      */
     public void write(Writable key, DocumentDBWritable value) throws IOException {
         Document doc = value.getDoc();
-        DocumentDBConnectorUtil.addIdIfMissing(doc);
-        this.cachedDocs.add(doc);
+        DocumentCollection targetCollection = this.collections[this.currentStoredProcedureIndex];
+        currentStoredProcedureIndex = (this.currentStoredProcedureIndex + 1) % this.collections.length;
         this.documentsProcessed++;
-        if (documentsProcessed % MAX_DOC_SIZE == 0) {
-            this.writeCurrentBatch();
-            LOG.info(String.format("wrote %d documents", this.documentsProcessed));
+        if(targetCollection.getPartitionKey() != null) {
+           DocumentDBConnectorUtil.createDocument(this.client, this.collections[this.currentStoredProcedureIndex].getSelfLink(), doc, this.enableUpsert);
+           if (documentsProcessed % MAX_DOC_SIZE == 0) {
+        	   LOG.info(String.format("wrote %d documents", this.documentsProcessed));
+           }
+        } else {
+            DocumentDBConnectorUtil.addIdIfMissing(doc);
+            this.cachedDocs.add(doc);
+            if (documentsProcessed % MAX_DOC_SIZE == 0) {
+                this.writeCurrentBatch();
+                LOG.info(String.format("wrote %d documents", this.documentsProcessed));
+            }
         }
     }
     

@@ -23,6 +23,7 @@ import com.microsoft.azure.documentdb.DocumentClientException;
 import com.microsoft.azure.documentdb.DocumentCollection;
 import com.microsoft.azure.documentdb.IncludedPath;
 import com.microsoft.azure.documentdb.IndexingPolicy;
+import com.microsoft.azure.documentdb.PartitionKey;
 import com.microsoft.azure.documentdb.QueryIterable;
 import com.microsoft.azure.documentdb.RangeIndex;
 import com.microsoft.azure.documentdb.RequestOptions;
@@ -42,8 +43,32 @@ public class DocumentDBConnectorUtil {
     private final static int MAX_SCRIPT_SIZE = 50000;
     private final static String BULK_IMPORT_ID = "HadoopBulkImportSprocV1";
     private final static String BULK_IMPORT_PATH = "/BulkImportScript.js";
+    private final static int CONFLICT_ERROR = 409;
     
     public static String UserAgentSuffix = " HadoopConnector/1.1.0";
+    
+    /**
+     * Creates a document and replaces it if it already exists when isUpsert is true. The function also retries on throttling 
+     * @param client The DocumentClient instance.
+     * @param collectionSelfLink The self link of the passed collection.
+     * @param isUpsert Specify if the document should be upserted.
+     */
+    public static Document createDocument(DocumentClient client, String collectionSelfLink, Document doc, boolean isUpsert) {
+        BackoffExponentialRetryPolicy retryPolicy = new BackoffExponentialRetryPolicy();
+        while(retryPolicy.shouldRetry()){
+        	try {
+	        	if(isUpsert) {
+	        		return client.upsertDocument(collectionSelfLink, doc, null, false).getResource();
+	        	} else {
+	        		return client.createDocument(collectionSelfLink, doc, null, false).getResource();	
+	        	}
+        	} catch(DocumentClientException e){
+        		retryPolicy.errorOccured(e);
+        	}            
+        }
+        
+        return null;
+    }
     
     /**
      * Gets an output collection with the passed name ( if the collection already exists return it, otherwise create new one
@@ -265,7 +290,7 @@ public class DocumentDBConnectorUtil {
     }
     
     private static IndexingPolicy getOutputIndexingPolicy(int outputStringPrecision) {
-        // Setup indexing policy.
+     // Setup indexing policy.
         IndexingPolicy policy = new IndexingPolicy();
         ArrayList<IncludedPath> includedPaths = new ArrayList<IncludedPath>();
 
