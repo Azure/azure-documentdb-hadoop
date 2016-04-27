@@ -28,7 +28,7 @@ To get the binaries of this library as distributed by Microsoft, ready for use w
     <dependency>
     	<groupId>com.microsoft.azure</groupId>
     	<artifactId>azure-documentdb-hadoop</artifactId>
-    	<version>1.1.0</version>
+    	<version>1.2.0</version>
     </dependency>
 
 ###Option 5: HDInsight
@@ -49,7 +49,7 @@ Install the DocumentDB Hadoop Connector onto HDInsight clusters through custom a
 * HDI 3.2
 
 ## Dependencies
-* Microsoft Azure DocumentDB Java SDK 1.1.0 (com.microsoft.azure / azure-documentdb / 1.1.0)
+* Microsoft Azure DocumentDB Java SDK 1.6.0 (com.microsoft.azure / azure-documentdb / 1.6.0)
 
 When using Hive:
 * OpenX Technologies JsonSerde 1.3.1-SNAPSHOT (org.openx.data / json-serde-parent / 1.3.1-SNAPSHOT)
@@ -157,6 +157,7 @@ Full Pig sample can be found [here](https://github.com/Azure/azure-documentdb-ha
 * Reads and writes to DocumentDB will be counted against your provisioned throughput for each collection.
 * Output to DocumentDB collections is done in batch round robin.
 * Connector supports configurable *offer* option. *Offer* configuration allows users to set the [performance tier](http://azure.microsoft.com/en-us/documentation/articles/documentdb-performance-levels/) of their newly creation collections (this does not apply when outputting to an already existing collection). The offer types are **S1**, **S2** and **S3**.
+* Connector supports output to partitioned collections. Hadoop Connector **will not** automatically create partitioned collections for Hadoop job outputs.
 
 ##Need Help?
 
