@@ -40,9 +40,8 @@ function bulkImport(docs, upsert) {
             
     // To replace the document, first issue a query to find it and then call replace.
     function tryReplace(doc, callback) {
-        var parsedDoc = JSON.parse(doc);
-        retrieveDoc(parsedDoc, null, function(retrievedDocs){
-            var isAccepted = collection.replaceDocument(retrievedDocs[0]._self, parsedDoc, callback);
+        retrieveDoc(doc, null, function(retrievedDocs) {
+            var isAccepted = collection.replaceDocument(retrievedDocs[0]._self, doc, callback);
             if (!isAccepted) getContext().getResponse().setBody(count);
         });
     }
