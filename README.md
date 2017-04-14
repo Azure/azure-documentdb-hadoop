@@ -156,7 +156,7 @@ Full Pig sample can be found [here](https://github.com/Azure/azure-documentdb-ha
 * Connector supports configurable *upsert* option. *Upsert* configuration is automatically set to *true* and will overwrite documents within the same collection with the same *id*. 
 * Reads and writes to DocumentDB will be counted against your provisioned throughput for each collection.
 * Output to DocumentDB collections is done in batch round robin.
-* Connector supports configurable *offer* option. *Offer* configuration allows users to set the [performance tier](http://azure.microsoft.com/en-us/documentation/articles/documentdb-performance-levels/) of their newly creation collections (this does not apply when outputting to an already existing collection). The offer types are **S1**, **S2** and **S3**.
+* Connector supports configurable *offer* option. *Offer* configuration allows users to set the [performance tier](http://azure.microsoft.com/en-us/documentation/articles/documentdb-performance-levels/) of their newly creation collections (this does not apply when outputting to an already existing collection).
 * Connector supports output to partitioned collections. Hadoop Connector **will not** automatically create partitioned collections for Hadoop job outputs.
 
 ##Need Help?
