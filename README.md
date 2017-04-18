@@ -1,4 +1,4 @@
-#Microsoft Azure DocumentDB Hadoop Connector
+# Microsoft Azure DocumentDB Hadoop Connector
 
 ![](https://img.shields.io/github/release/azure/azure-documentdb-hadoop.svg)
 ![](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-documentdb-hadoop.svg)
@@ -6,39 +6,39 @@
 
 This project provides a client library in Java that allows Microsoft Azure DocumentDB to act as an input source or output sink for MapReduce, Hive and Pig jobs.
 
-##Download
-###Option 1: Via Github
+## Download
+### Option 1: Via Github
 
 To get the binaries of this library as distributed by Microsoft, ready for use within your project, you can use [GitHub releases](https://github.com/Azure/azure-documentdb-hadoop/releases).
 
-###Option 2: Source Via Git
+### Option 2: Source Via Git
 
 To get the source code of the connector via git just type:
 
     git clone git://github.com/Azure/azure-documentdb-hadoop.git
 
-###Option 3: Source Zip
+### Option 3: Source Zip
 
 To download a copy of the source code, click "Download ZIP" on the right side of the page or click [here](https://github.com/Azure/azure-documentdb-hadoop/archive/master.zip). 
 
-###Option 4: Via Maven
+### Option 4: Via Maven
 
 To get the binaries of this library as distributed by Microsoft, ready for use within your project, you can use Maven. 
-
-    <dependency>
-    	<groupId>com.microsoft.azure</groupId>
-    	<artifactId>azure-documentdb-hadoop</artifactId>
-    	<version>1.2.0</version>
-    </dependency>
-
-###Option 5: HDInsight
+```xml
+<dependency>
+	<groupId>com.microsoft.azure</groupId>
+	<artifactId>azure-documentdb-hadoop</artifactId>
+	<version>1.2.0</version>
+</dependency>
+```
+### Option 5: HDInsight
 
 Install the DocumentDB Hadoop Connector onto HDInsight clusters through custom action scripts. Full instructions can be found [here](https://azure.microsoft.com/documentation/articles/documentdb-run-hadoop-with-hdinsight/). 
 
-##Requirements
+## Requirements
 * Java Development Kit 7
 
-##Supported Versions
+## Supported Versions
 * Apache Hadoop & YARN 2.4.0
     * Apache Pig 0.12.1
     * Apache Hive & HCatalog 0.13.1
@@ -57,13 +57,13 @@ When using Hive:
 
 Please download the jars and add them to your build path. 
 
-##Usage
+## Usage
 
 To use this client library with Azure DocumentDB, you need to first [create an account](http://azure.microsoft.com/en-us/documentation/articles/documentdb-create-account/).
 
-###MapReduce
+### MapReduce
 
-#####Configuring input and output from DocumentDB Example
+##### Configuring input and output from DocumentDB Example
 ```Java
     // Import Hadoop Connector Classes
     import com.microsoft.azure.documentdb.Document;
@@ -97,8 +97,8 @@ To use this client library with Azure DocumentDB, you need to first [create an a
 
 Full MapReduce sample can be found [here](https://github.com/Azure/azure-documentdb-hadoop/blob/master/samples/MapReduceTutorial.java).
 
-###Hive
-#####Loading data from DocumentDB Example
+### Hive
+##### Loading data from DocumentDB Example
 ```Java
     CREATE EXTERNAL TABLE DocumentDB_Hive_Table( COLUMNS )
     STORED BY 'com.microsoft.azure.documentdb.hive.DocumentDBStorageHandler'
@@ -110,7 +110,7 @@ Full MapReduce sample can be found [here](https://github.com/Azure/azure-documen
         'DocumentDB.query' = '[Optional] Your DocumentDB Query' );
 ```
 
-#####Storing data to DocumentDB Example
+##### Storing data to DocumentDB Example
 ```Java
     CREATE EXTERNAL TABLE Hive_DocumentDB_Table( COLUMNS )
     STORED BY 'com.microsoft.azure.documentdb.hive.DocumentDBStorageHandler' 
@@ -126,8 +126,8 @@ Full MapReduce sample can be found [here](https://github.com/Azure/azure-documen
 ```
 Full Hive sample can be found [here](https://github.com/Azure/azure-documentdb-hadoop/blob/master/samples/Hive_Tutorial.hql).
 
-###Pig
-#####Loading data from DocumentDB Example
+### Pig
+##### Loading data from DocumentDB Example
 ```Java
     LOAD 'Your DocumentDB Endpoint' 
     USING com.microsoft.azure.documentdb.hadoop.pig.DocumentDBLoader( 
@@ -137,7 +137,7 @@ Full Hive sample can be found [here](https://github.com/Azure/azure-documentdb-h
         '[Optional] Your DocumentDB SQL Query' );
 ```
 
-#####Storing data to DocumentDB Example
+##### Storing data to DocumentDB Example
 ```Java
     STORE data  INTO 'DocumentDB Endpoint' 
     USING com.microsoft.azure.documentdb.hadoop.pig.DocumentDBStorage( 
@@ -150,7 +150,7 @@ Full Hive sample can be found [here](https://github.com/Azure/azure-documentdb-h
 ```
 Full Pig sample can be found [here](https://github.com/Azure/azure-documentdb-hadoop/blob/master/samples/Pig_Tutorial.pig).
 
-##Remarks
+## Remarks
 * When outputting to DocumentDB, your output collection will require capacity for an [additional stored procedure](http://azure.microsoft.com/en-us/documentation/articles/documentdb-limits/). The stored procedure will remain in your collection for reuse.
 * The Hadoop Connector automatically sets your indexes to range indexes with max precision on strings and numbers. More information can be found [here](http://azure.microsoft.com/en-us/documentation/articles/documentdb-indexing-policies/).
 * Connector supports configurable *upsert* option. *Upsert* configuration is automatically set to *true* and will overwrite documents within the same collection with the same *id*. 
@@ -159,17 +159,17 @@ Full Pig sample can be found [here](https://github.com/Azure/azure-documentdb-ha
 * Connector supports configurable *offer* option. *Offer* configuration allows users to set the [performance tier](http://azure.microsoft.com/en-us/documentation/articles/documentdb-performance-levels/) of their newly creation collections (this does not apply when outputting to an already existing collection).
 * Connector supports output to partitioned collections. Hadoop Connector **will not** automatically create partitioned collections for Hadoop job outputs.
 
-##Need Help?
+## Need Help?
 
 Be sure to check out the Microsoft Azure [Developer Forums on MSDN](https://social.msdn.microsoft.com/forums/azure/en-US/home?forum=AzureDocumentDB) or the [Developer Forums on Stack Overflow](http://stackoverflow.com/questions/tagged/azure-documentdb) if you have trouble with the provided code. Also, check out our [tutorial](http://azure.microsoft.com/en-us/documentation/articles/documentdb-run-hadoop-with-hdinsight/) for more information.
 
-##Contribute Code or Provide Feedback
+## Contribute Code or Provide Feedback
 
 If you would like to become an active contributor to this project please follow the instructions provided in [Azure Projects Contribution Guidelines](http://azure.github.io/guidelines.html).
 
 If you encounter any bugs with the library please file an issue in the [Issues](https://github.com/Azure/azure-documentdb-hadoop/issues) section of the project.
 
-##Learn More
+## Learn More
 * [DocumentDB with HDInsight Tutorial](https://azure.microsoft.com/documentation/articles/documentdb-run-hadoop-with-hdinsight/)
 * [Official Hadoop Documentation](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 * [Azure Developer Center](http://azure.microsoft.com/en-us/develop/java/)
